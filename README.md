@@ -1,6 +1,6 @@
 tag
 ===
-tag is a command line tool to manipulate tags on Mac OS 10.9 Mavericks files, and to query for files with those tags.
+**tag** is a command line tool to manipulate tags on Mac OS 10.9 Mavericks files, and to query for files with those tags. **tag** can use the file system's built-in metadata search functionality to rapidly find all files that have been tagged with a given set of tags.
 
 Usage
 ---
@@ -89,6 +89,3 @@ The following features have been contemplated for future enhancement:
 7. The ability to display and/or set tag colors
 
 But the command is very usable in current form, modulo your testing.
-
-
-
