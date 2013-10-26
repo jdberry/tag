@@ -32,7 +32,7 @@ This command replaces all tags on the specified files with new tags. To remove a
 	tag --match tagname *
 	tag --match tagname1,tagname2,... file1 file2...
 	
-This command prints the file names that have the specified tags.  Matched files must have ALL of the tags specified. Note that it matches only against the files that are provided on input. To search across your file system, see the --find command.
+This command prints the file names that match the specified tags.  Matched files must have at least ALL of the tags specified. Note that it matches only against the files that are provided on input. To search for tagged files across your entire file system, see the --find command.
 	
 ### List the tag(s) on a file:
 
@@ -42,7 +42,7 @@ This command prints the file names that have the specified tags.  Matched files 
 	
 This command displays the tags for each file listed.
 	
-### Find all files on the system with a tag:
+### Find all files on the filesystem with tag(s):
 
 	tag --find tagname
 	tag --find tagname,tagname2...
@@ -69,7 +69,7 @@ Advanced Usage
 ----
 Hints:
 
-1. Wherever a "tagname" is expected, a list of tags may be provided. They must be comma-separated.
+1. Wherever a "tagname" is expected, a list of tags may be provided. They must be comma-separated. Tagnames may include spaces, but the entire tag list must be provided as one parameter: "a multiword tag name".
 2. Wherever a "file" is expected, a list of files may be used instead. These are provided as separate parameters.
 3. Note that directories can be tagged as well, so directory names may be used also.
 4. The mode selector --add, --remove, --set, --match, --list, or --find may be abbreviated as -a, -r, -s, -m, -l, or -f, respectively.
