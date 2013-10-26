@@ -64,9 +64,17 @@ This command displays the tags for each file listed.
 	
 This file searches across your local filesystem for all files that contain the specified tags.
 	
+Prebuild Packages
+---
+There is no binary installer yet, but you may install **tag** using the following package managers:
+
+* MacPorts
+
+	sudo port install tag
+
 Building and Installing
 ---
-You must have Xcode installed to build/install. There is no binary installer yet.
+You must have Xcode or the Command Line Tools installed to build/install.
 
 To build without installing:
 
@@ -84,21 +92,21 @@ Advanced Usage
 ----
 Hints:
 
-1. Wherever a "tagname" is expected, a list of tags may be provided. They must be comma-separated.
-2. Tagnames may include spaces, but the entire tag list must be provided as one parameter: "a multiword tag name".
-3. Wherever a "file" is expected, a list of files may be used instead. These are provided as separate parameters.
-4. Note that directories can be tagged as well, so directories may be specified instead of files.
-5. The mode selector --add, --remove, --set, --match, --list, or --find may be abbreviated as -a, -r, -s, -m, -l, or -f, respectively.
-6. If no mode selector is given, --list is assumed.
+* Wherever a "tagname" is expected, a list of tags may be provided. They must be comma-separated.
+* Tagnames may include spaces, but the entire tag list must be provided as one parameter: "a multiword tag name".
+* Wherever a "file" is expected, a list of files may be used instead. These are provided as separate parameters.
+* Note that directories can be tagged as well, so directories may be specified instead of files.
+* The mode selector --add, --remove, --set, --match, --list, or --find may be abbreviated as -a, -r, -s, -m, -l, or -f, respectively.
+* If no mode selector is given, --list is assumed.
 
 Omissions
 ---
 The following features have been contemplated for future enhancement:
 
-1. A binary installer
-2. A better format for the output of list
-3. The ability to control the search scope so that you can search across mounted network volumes instead of just local files
-4. A fleshed-out man page
-5. The ability to display and/or set tag colors
+* A binary installer
+* A better format for the output of list
+* The ability to control the search scope so that you can search across mounted network volumes instead of just local files
+* A fleshed-out man page
+* The ability to display and/or set tag colors
 
 But the command is very usable in current form, modulo your testing.
