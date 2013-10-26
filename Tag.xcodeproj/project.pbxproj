@@ -37,6 +37,8 @@
 		901F141C181B25F10007C852 /* Tag.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Tag.m; sourceTree = "<group>"; };
 		901F141E181B469E0007C852 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		901F1423181B71AF0007C852 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
+		901F1425181B90930007C852 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		901F1426181B90930007C852 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -55,6 +57,8 @@
 		901F1401181B16A00007C852 = {
 			isa = PBXGroup;
 			children = (
+				901F1425181B90930007C852 /* LICENSE */,
+				901F1426181B90930007C852 /* README.md */,
 				901F1423181B71AF0007C852 /* Makefile */,
 				901F140F181B16A00007C852 /* Tag */,
 				901F140C181B16A00007C852 /* Frameworks */,
