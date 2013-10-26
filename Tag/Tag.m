@@ -69,20 +69,20 @@ static void Printf(NSString* fmt, ...) __attribute__ ((format(__NSString__, 1, 2
 
 static void FPrintf(FILE* f, NSString* fmt, ...)
 {
-	va_list ap;
-	va_start (ap, fmt);
-	NSString *output = [[NSString alloc] initWithFormat:fmt arguments:ap];
-	va_end (ap);
+    va_list ap;
+    va_start (ap, fmt);
+    NSString *output = [[NSString alloc] initWithFormat:fmt arguments:ap];
+    va_end (ap);
     fprintf(f, "%s", [output UTF8String]);
 }
 
 
 static void Printf(NSString* fmt, ...)
 {
-	va_list ap;
-	va_start (ap, fmt);
-	NSString *output = [[NSString alloc] initWithFormat:fmt arguments:ap];
-	va_end (ap);
+    va_list ap;
+    va_start (ap, fmt);
+    NSString *output = [[NSString alloc] initWithFormat:fmt arguments:ap];
+    va_end (ap);
     printf("%s", [output UTF8String]);
 }
 
