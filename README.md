@@ -1,6 +1,6 @@
 tag
 ===
-A command line tool to manipulate tags on Mavericks files, and to query for files with those tags.
+tag is a command line tool to manipulate tags on Mac OS 10.9 Mavericks files, and to query for files with those tags.
 
 Usage
 ---
@@ -78,7 +78,7 @@ Hints:
 
 Omissions
 ---
-This is new software. The following things have been contemplated:
+The following features have been contemplated for future enhancement:
 
 1. A binary installer
 2. A better format for the output of list
