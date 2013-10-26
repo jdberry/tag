@@ -51,19 +51,19 @@ This file searches across your local filesystem for all files that contain the s
 	
 Building and Installing
 ---
-To build and install onto your system:
-
-	sudo make install
-	
-This will install the tag tool at /usr/local/bin/tag.
+You must have Xcode installed to build/install. There is no binary installer yet.
 
 To build without installing:
 
 	make
 	
-This will build the tag tool into the ./bin directory.
+This will build tag into ./bin/tag
 
-You must have Xcode installed to build/install. There is no binary installer yet.
+To build and install onto your system:
+
+	make && sudo make install
+	
+This will install the tag tool at /usr/local/bin/tag
 
 Advanced Usage
 ----
