@@ -64,11 +64,11 @@ This command displays the tags for each file listed.
 	
 This file searches across your local filesystem for all files that contain the specified tags.
 	
-Prebuild Packages
+Prebuilt Packages
 ---
 There is no binary installer yet, but you may install **tag** using the following package managers:
 
-* MacPorts
+### MacPorts
 
 	sudo port install tag
 
