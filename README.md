@@ -83,9 +83,7 @@ The following features have been contemplated for future enhancement:
 1. A binary installer
 2. A better format for the output of list
 3. The ability to control the search scope so that you can search across mounted network volumes instead of just local files
-4. Some real output from the --help command
-5. A fleshed-out man page
-6. A program version
-7. The ability to display and/or set tag colors
+4. A fleshed-out man page
+5. The ability to display and/or set tag colors
 
 But the command is very usable in current form, modulo your testing.
