@@ -12,7 +12,6 @@
 		901F1415181B16A00007C852 /* tag.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 901F1414181B16A00007C852 /* tag.1 */; };
 		901F141D181B25F10007C852 /* Tag.m in Sources */ = {isa = PBXBuildFile; fileRef = 901F141C181B25F10007C852 /* Tag.m */; };
 		901F141F181B469E0007C852 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 901F141E181B469E0007C852 /* CoreServices.framework */; };
-		901F1424181B71AF0007C852 /* Makefile in Sources */ = {isa = PBXBuildFile; fileRef = 901F1423181B71AF0007C852 /* Makefile */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -151,7 +150,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				901F1424181B71AF0007C852 /* Makefile in Sources */,
 				901F141D181B25F10007C852 /* Tag.m in Sources */,
 				901F1411181B16A00007C852 /* main.m in Sources */,
 			);
@@ -265,6 +263,7 @@
 				901F141A181B16A00007C852 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
