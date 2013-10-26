@@ -394,7 +394,8 @@ static void Printf(NSString* fmt, ...)
     [_metadataQuery setSearchScopes:searchScopes];
     
     // Configure the sorting of the results
-    NSSortDescriptor *sortKeys = [[NSSortDescriptor alloc] initWithKey:(id)kMDItemPath
+    // (note that the query can't sort by the item path, which likely makes this useless)
+    NSSortDescriptor *sortKeys = [[NSSortDescriptor alloc] initWithKey:(id)kMDItemDisplayName
                                                              ascending:YES];
     [_metadataQuery setSortDescriptors:[NSArray arrayWithObject:sortKeys]];
     
