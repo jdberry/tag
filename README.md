@@ -4,6 +4,21 @@ tag
 
 Usage
 ---
+
+### Synopsis:
+
+    tag - A tool for manipulating and querying file tags.
+      usage:
+        tag -v | --version                  Version information
+        tag -h | --help                     Display this help
+        tag -a | --add <tags> <file>...     Add tags to file
+        tag -r | --remove <tags> <file>...  Remove tags from file
+        tag -s | --set <tags> <file>...     Set tags on file
+        tag -m | --match <tags> <file>...   Display files with matching tags
+        tag -l | --list <file>...           List the tags on file
+        tag -f | --find <tags>              Find all files with tags
+      <tags> is be a comma-separated list of tag names.
+
 ### Add tag(s) to a file:
 
 	tag --add tagname file
