@@ -1,10 +1,14 @@
-DSTROOT		= 
+prefix		= /usr/local
+DESTDIR		= 
+
 DSTUSR		= root
 DSTGRP		= admin
 DSTMODE		= 0755
 
 INSTALL		= /usr/bin/install
-INSTALLDIR	= /usr/local/bin
+
+BINDIR 		= ${prefix}/bin
+MANDIR		= ${prefix}/man
 
 CFLAGS		= -O2
 SRCS		= Tag/main.m Tag/Tag.m
@@ -12,6 +16,8 @@ LIBS		= -framework Foundation \
 			  -framework CoreServices
 
 PROGRAM		= bin/tag
+
+all: tag
 
 tag: bin ${PROGRAM}
 
@@ -27,6 +33,6 @@ clean:
 distclean: clean
 
 install: tag
-	${INSTALL} -o ${DSTUSR} -g ${DSTGRP} -m ${DSTMODE} ${PROGRAM} ${DSTROOT}${INSTALLDIR}
+	${INSTALL} -o ${DSTUSR} -g ${DSTGRP} -m ${DSTMODE} ${PROGRAM} ${DESTDIR}${BINDIR}
 	
 .PHONY: tag clean distclean install
