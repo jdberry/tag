@@ -35,13 +35,17 @@
     tag --find tagname,tagname
     tag --list filename
  
-    unfinished:
+    tag --version
     tag --help
  */
 
 
 #import "Tag.h"
 #import <getopt.h>
+
+
+NSString* const version = @"1.0";
+
 
 @interface Tag ()
 
@@ -51,6 +55,32 @@
 
 
 @implementation Tag
+
+
+static void FPrintf(FILE* f, NSString* fmt, ...) __attribute__ ((format(__NSString__, 2, 3)));
+static void Printf(NSString* fmt, ...) __attribute__ ((format(__NSString__, 1, 2)));
+
+
+static void FPrintf(FILE* f, NSString* fmt, ...)
+{
+	va_list ap;
+	va_start (ap, fmt);
+	NSString *output = [[NSString alloc] initWithFormat:fmt arguments:ap];
+	va_end (ap);
+    fprintf(f, "%s", [output UTF8String]);
+}
+
+
+static void Printf(NSString* fmt, ...)
+{
+	va_list ap;
+	va_start (ap, fmt);
+	NSString *output = [[NSString alloc] initWithFormat:fmt arguments:ap];
+	va_end (ap);
+    printf("%s", [output UTF8String]);
+}
+
+
 
 - (void)parseCommandLineArgv:(char * const *)argv argc:(int)argc
 {
@@ -66,6 +96,7 @@
         
         // other
         { "help",       no_argument,            0,              'h' },
+        { "version",    no_argument,            0,              'v' },
         
         { 0,            0,                      0,              0 }
     };
@@ -73,7 +104,7 @@
     // Process Options
     int option_char;
     int option_index;
-    while ((option_char = getopt_long(argc, argv, "s:a:r:m:f:lh", options, &option_index)) != -1)
+    while ((option_char = getopt_long(argc, argv, "s:a:r:m:f:lhv", options, &option_index)) != -1)
     {
         switch (option_char)
         {
@@ -85,7 +116,7 @@
             case OperationModeList:
                 if (self.operationMode)
                 {
-                    fprintf(stderr, "Operation mode cannot be respecified\n");
+                    FPrintf(stderr, @"Operation mode cannot be respecified\n");
                     exit(1);
                 }
                 self.operationMode = option_char;
@@ -97,6 +128,10 @@
                 
             case 'h':
                 [self displayHelp];
+                break;
+                
+            case 'v':
+                [self displayVersion];
                 break;
                 
             case '?':
@@ -126,9 +161,32 @@
 }
 
 
+- (NSString*)programName
+{
+    return [NSProcessInfo processInfo].processName;
+}
+
+
+- (void)displayVersion
+{
+    Printf(@"%@ v%@\n", [self programName], version);
+}
+
+
 - (void)displayHelp
 {
-    printf("%s\n", "Sorry, there's no help for you (yet)");
+    Printf(@"%@ - %@", [self programName], @"A tool for manipulating and querying file tags.\n"
+           "  usage:\n"
+           "    tag -v | --version                  Version information\n"
+           "    tag -h | --help                     Display this help\n"
+           "    tag -a | --add <tags> <file>...     Add tags to file\n"
+           "    tag -r | --remove <tags> <file>...  Remove tags from file\n"
+           "    tag -s | --set <tags> <file>...     Set tags on file\n"
+           "    tag -m | --match <tags> <file>...   Display files with matching tags\n"
+           "    tag -l | --list <file>...           List the tags on file\n"
+           "    tag -f | --find <tags>              Find all files with tags\n"
+           "  <tags> is be a comma-separated list of tag names.\n"
+    );
 }
 
 
@@ -166,9 +224,7 @@
 
 - (void)reportFatalError:(NSError*)error onURL:(NSURL*)URL
 {
-    NSString* programName = [NSProcessInfo processInfo].processName;
-    NSString* message = [NSString stringWithFormat:@"%@: %@", programName, error.localizedDescription];
-    fprintf(stderr, "%s\n", [message UTF8String]);
+    FPrintf(stderr, @"%@: %@", [self programName], error.localizedDescription);
     exit(2);
 }
 
@@ -237,10 +293,10 @@
     // Display only those items containing all the tags listed
     for (NSURL* URL in self.URLs)
     {
-        NSArray* tags;
         NSError* error;
 
         // Get the tags on the URL
+        NSArray* tags;
         if (![URL getResourceValue:&tags forKey:NSURLTagNamesKey error:&error])
             [self reportFatalError:error onURL:URL];
         
@@ -249,10 +305,7 @@
         // If the set of existing tags contains all of the required
         // tags then print the path
         if ([requiredTags isSubsetOfSet:tagSet])
-        {
-            NSString* output = [URL relativePath];
-            printf("%s\n", [output UTF8String]);
-        }
+            Printf(@"%@\n", [URL relativePath]);
     }
 }
 
@@ -262,13 +315,11 @@
     // List the tags for each item
     for (NSURL* URL in self.URLs)
     {
-        NSArray* tags;
         NSError* error;
+        NSArray* tags;
         if (![URL getResourceValue:&tags forKey:NSURLTagNamesKey error:&error])
             [self reportFatalError:error onURL:URL];
-        
-        NSString* output = [NSString stringWithFormat:@"%@\t%@", [URL relativePath], [tags count] ? [tags componentsJoinedByString:@","] : @""];
-        printf("%s\n", [output UTF8String]);
+        Printf(@"%@\t%@\n", [URL relativePath], [tags count] ? [tags componentsJoinedByString:@","] : @"");
     }
 }
 
@@ -367,8 +418,7 @@
         
         // kMDItemPath, kMDItemDisplayName
         NSString *path = [theResult valueForAttribute:(NSString *)kMDItemPath];
-        
-        printf("%s\n", [path UTF8String]);
+        Printf(@"%@\n", path);
     }
     
     // Remove the notification observers
