@@ -39,6 +39,12 @@
     tag --help
  */
 
+/*
+    Maybe:
+        --find should be able to find all files with tags, even if the tags aren't specified?
+        --find should list the tags on the files it finds?
+ */
+
 
 #import "Tag.h"
 #import <getopt.h>
