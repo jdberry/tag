@@ -34,6 +34,9 @@
     tag --match tagname,tagname filename...
     tag --find tagname,tagname
     tag --list filename
+ 
+    unfinished:
+    tag --help
  */
 
 
@@ -309,11 +312,9 @@
 }
 
 
-// Initialize Search Method
 - (void)initiateMetadataSearchForTags:(NSArray*)tags
 {
-    // Create the metadata query instance. The metadataSearch @property is
-    // declared as retain
+    // Create the metadata query instance
     self.metadataQuery=[[NSMetadataQuery alloc] init];
     
     // Register the notifications for batch and completion updates
@@ -327,7 +328,7 @@
                                                  name:NSMetadataQueryDidFinishGatheringNotification
                                                object:_metadataQuery];
     
-    // Configure the search predicate to
+    // Configure the search predicate
     NSPredicate *searchPredicate = [self formQueryPredicateForTags:tags];
     [_metadataQuery setPredicate:searchPredicate];
     
@@ -335,8 +336,7 @@
     NSArray *searchScopes = @[NSMetadataQueryLocalComputerScope];
     [_metadataQuery setSearchScopes:searchScopes];
     
-    // Configure the sorting of the results so it will order the results by the
-    // display name
+    // Configure the sorting of the results
     NSSortDescriptor *sortKeys = [[NSSortDescriptor alloc] initWithKey:(id)kMDItemPath
                                                              ascending:YES];
     [_metadataQuery setSortDescriptors:[NSArray arrayWithObject:sortKeys]];
@@ -351,19 +351,17 @@
 }
 
 
-// Method invoked when notifications of content batches have been received
 - (void)queryDidUpdate:sender;
 {
 }
 
 
-// Method invoked when the initial query gathering is completed
 - (void)queryComplete:sender;
 {
     // Stop the query, the single pass is completed.
     [_metadataQuery stopQuery];
     
-    // Print the results from the query
+    // Print results from the query
     for (NSUInteger i = 0; i < [_metadataQuery resultCount]; i++) {
         NSMetadataItem *theResult = [_metadataQuery resultAtIndex:i];
         
