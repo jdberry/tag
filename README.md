@@ -53,12 +53,12 @@ The *set* operaration replaces all tags on the specified files with new tags.
 
 ### Show files matching tag(s)
 
-The *match* operation prints the file names that match the specified tags.  Matched files must have at least ALL of the tags specified. Note that it matches only against the files that are provided on input. To search for tagged files across your entire file system, see the --find command.
+The *match* operation prints the file names that match the specified tags.  Matched files must have at least *all* of the tags specified. Note that *match* matches only against the files that are provided as parameters. To search for tagged files across your local filesystem, see the *find* operation.
 
 	tag --match tagname *
 	tag --match tagname1,tagname2,... file1 file2...
 	
-You can use a wildcard (*) character in the tags list to match against any/all tags. Note, however, that you'll need to quote that * against shell expansion. To display all files in the current directory that have any sort of tag, use:
+You can use a wildcard (*) character in the tags list to match against any/all tags. Note, however, that you'll need to quote that * against shell expansion. To display all files in the current directory that have any combination of tags (but not _no_ tags), use:
 
 	tag --match \* *
 	
