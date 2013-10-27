@@ -62,7 +62,7 @@ You can use a wildcard (*) character in the tags list to match against any/all t
 
 	tag --match \* *
 	
-Turn on --tags display mode for this operation to additional show those tags:
+Turn on --tags display mode for this operation to additionally show those tags:
 
 	tag --match \* --tags *
 
@@ -80,15 +80,18 @@ This *list* operation lists all the tags for each file.
 	
 	tag --list file
 	tag --list file1 file2...
+	
+*list* is the default operation, so you may omit the list option:
+	
 	tag file1 file2...
 	
-You can turn on garrulous mode for this as well:
+You can turn on garrulous mode for *list* as well:
 
-	tag -lg *
+	tag -g *
 	
 If you just want tags, but not filenames, turn off display of files:
 
-	tag --list --no-file *
+	tag --no-file *
 	
 ### Find all files on the filesystem with tag(s)
 
@@ -142,8 +145,8 @@ Hints:
 * Tagnames may include spaces, but the entire tag list must be provided as one parameter: "a multiword tag name".
 * Wherever a "file" is expected, a list of files may be used instead. These are provided as separate parameters.
 * Note that directories can be tagged as well, so directories may be specified instead of files.
-* The mode selector --add, --remove, --set, --match, --list, or --find may be abbreviated as -a, -r, -s, -m, -l, or -f, respectively.
-* If no mode selector is given, --list is assumed.
+* The operation selector --add, --remove, --set, --match, --list, or --find may be abbreviated as -a, -r, -s, -m, -l, or -f, respectively. All of the options have a short version, in fact. See see the synopsis above, or output from help.
+* If no operation selector is given, --list is assumed.
 
 Omissions
 ---
