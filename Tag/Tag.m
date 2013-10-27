@@ -195,8 +195,12 @@ static void Printf(NSString* fmt, ...)
         }
     }
     
+    // If the operation wasn't set, default to list
+    if (self.operationMode == OperationModeUnknown)
+        self.operationMode = OperationModeList;
+    
     // Set default output flags for the chosen operation
-    _outputFlags = [self outputFlagsForMode:_operationMode];
+    _outputFlags = [self outputFlagsForMode:self.operationMode];
     
     // Override the output flags if they were explicitly set on command line
     if (name_flag)
@@ -288,9 +292,11 @@ static void Printf(NSString* fmt, ...)
             [self doFind];
             break;
 
-        case OperationModeUnknown:
         case OperationModeList:
             [self doList];
+            break;
+            
+        case OperationModeUnknown:
             break;
     }
 }
