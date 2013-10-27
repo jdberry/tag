@@ -48,7 +48,7 @@
 #import <getopt.h>
 
 
-NSString* const version = @"0.5.2";
+NSString* const version = @"0.6";
 
 
 @interface Tag ()
