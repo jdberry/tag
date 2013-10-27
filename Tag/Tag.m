@@ -327,6 +327,8 @@ static void Printf(NSString* fmt, ...)
 
 - (void)emitURL:(NSURL*)URL tags:(NSArray*)tags
 {
+    NSString* fileName = (_outputFlags & OutputFlagsName) ? [URL relativePath] : nil;
+    
     NSString* tagString = nil;
     NSString* tagSeparator;
     int minFileFieldWidth = 0;
@@ -335,7 +337,7 @@ static void Printf(NSString* fmt, ...)
         NSArray* sortedTags = [tags sortedArrayUsingSelector:@selector(compare:)];
         if (_outputFlags & OutputFlagsGarrulous)
         {
-            tagSeparator = @"\n    ";
+            tagSeparator = fileName ? @"\n    " : @"\n";    // Don't indent tags if no filename
             tagString = [sortedTags componentsJoinedByString:tagSeparator];
         }
         else
@@ -345,8 +347,6 @@ static void Printf(NSString* fmt, ...)
             minFileFieldWidth = 31;
         }
     }
-    
-    NSString* fileName = (_outputFlags & OutputFlagsName) ? [URL relativePath] : nil;
     
     if (tagString && fileName)
     {
