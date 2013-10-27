@@ -38,9 +38,16 @@ typedef NS_ENUM(int, OperationMode) {
     OperationModeList       = 'l',
 };
 
+typedef NS_OPTIONS(int, OutputFlags) {
+    OutputFlagsName         = (1 << 0),
+    OutputFlagsTags         = (1 << 1),
+};
+
 @interface Tag : NSObject
 
 @property (assign, nonatomic) OperationMode operationMode;
+@property (assign, nonatomic) OutputFlags outputFlags;
+
 @property (copy, nonatomic) NSArray* tags;
 @property (copy, nonatomic) NSArray* URLs;
 

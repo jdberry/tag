@@ -35,14 +35,12 @@
     tag --find tagname,tagname
     tag --list filename
  
-    tag --version
-    tag --help
- */
-
-/*
-    Maybe:
-        --find should be able to find all files with tags, even if the tags aren't specified?
-        --find should list the tags on the files it finds?
+    also:
+    
+        --name, --no-name
+        --tags, --no-tags
+        --version
+        --help
  */
 
 
@@ -50,7 +48,7 @@
 #import <getopt.h>
 
 
-NSString* const version = @"0.5.1";
+NSString* const version = @"0.5.2";
 
 
 @interface Tag ()
@@ -87,6 +85,25 @@ static void Printf(NSString* fmt, ...)
 }
 
 
+- (OutputFlags)outputFlagsForMode:(OperationMode)mode
+{
+    OutputFlags result = 0;
+    switch (mode)
+    {
+        case OperationModeMatch:
+        case OperationModeFind:
+            result = OutputFlagsName;
+            break;
+        case OperationModeList:
+            result = OutputFlagsName | OutputFlagsTags;
+            break;
+        default:
+            break;
+    }
+    return result;
+}
+
+
 
 - (void)parseCommandLineArgv:(char * const *)argv argc:(int)argc
 {
@@ -100,6 +117,12 @@ static void Printf(NSString* fmt, ...)
         
         { "list",       no_argument,            0,              OperationModeList },
         
+        // Format options
+        { "name",       no_argument,            0,              'n' },
+        { "no-name",    no_argument,            0,              'N' },
+        { "tags",       no_argument,            0,              't' },
+        { "no-tags",    no_argument,            0,              'T' },
+
         // other
         { "help",       no_argument,            0,              'h' },
         { "version",    no_argument,            0,              'v' },
@@ -108,9 +131,12 @@ static void Printf(NSString* fmt, ...)
     };
     
     // Process Options
+    int name_flag = 0;
+    int tags_flag = 0;
+    
     int option_char;
     int option_index;
-    while ((option_char = getopt_long(argc, argv, "s:a:r:m:f:lhv", options, &option_index)) != -1)
+    while ((option_char = getopt_long(argc, argv, "s:a:r:m:f:lnNtThv", options, &option_index)) != -1)
     {
         switch (option_char)
         {
@@ -132,6 +158,20 @@ static void Printf(NSString* fmt, ...)
                 
                 break;
                 
+            case 'n':
+                name_flag = 2;
+                break;
+            case 'N':
+                name_flag = 1;
+                break;
+                
+            case 't':
+                tags_flag = 2;
+                break;
+            case 'T':
+                tags_flag = 1;
+                break;
+                
             case 'h':
                 [self displayHelp];
                 break;
@@ -144,6 +184,15 @@ static void Printf(NSString* fmt, ...)
                 break;
         }
     }
+    
+    // Set default output flags for the chosen operation
+    _outputFlags = [self outputFlagsForMode:_operationMode];
+    
+    // Override the output flags if they were explicitly set on command line
+    if (name_flag)
+        _outputFlags = (_outputFlags & ~OutputFlagsName) | ((name_flag - 1) * OutputFlagsName);
+    if (tags_flag)
+        _outputFlags = (_outputFlags & ~OutputFlagsTags) | ((tags_flag - 1) * OutputFlagsTags);
     
     // Process path names into URLs
     NSMutableArray* URLs = [NSMutableArray new];
@@ -183,16 +232,26 @@ static void Printf(NSString* fmt, ...)
 {
     Printf(@"%@ - %@", [self programName], @"A tool for manipulating and querying file tags.\n"
            "  usage:\n"
-           "    tag -v | --version                  Version information\n"
-           "    tag -h | --help                     Display this help\n"
            "    tag -a | --add <tags> <file>...     Add tags to file\n"
            "    tag -r | --remove <tags> <file>...  Remove tags from file\n"
            "    tag -s | --set <tags> <file>...     Set tags on file\n"
            "    tag -m | --match <tags> <file>...   Display files with matching tags\n"
            "    tag -l | --list <file>...           List the tags on file\n"
            "    tag -f | --find <tags>              Find all files with tags\n"
-           "  <tags> is be a comma-separated list of tag names.\n"
+           "  <tags> is a comma-separated list of tag names; use * to match/find any tag.\n"
+           "  additional options:\n"
+           "        -v | --version      Display app version\n"
+           "        -h | --help         Display this help\n"
+           "        -n | --name         Turn on filename display in output (default)\n"
+           "        -N | --no-name      Turn off filename display in output (list)\n"
+           "        -t | --tags         Turn on tags display in output (find, match)\n"
+           "        -T | --no-tags      Turn off tags display in output (list)\n"
     );
+    
+    /*
+     tag --name --tags
+     tag --no-name --no-tags
+     */
 }
 
 
@@ -232,6 +291,55 @@ static void Printf(NSString* fmt, ...)
 {
     FPrintf(stderr, @"%@: %@", [self programName], error.localizedDescription);
     exit(2);
+}
+
+
+- (BOOL)wildcardInArray:(NSArray*)array
+{
+    return [array containsObject:@"*"];
+}
+
+
+- (NSString*)string:(NSString*)s paddedToMinimumLength:(int)minLength
+{
+    NSInteger length = [s length];
+    if (length >= minLength)
+        return s;
+    
+    return [s stringByPaddingToLength:minLength withString:@"    " startingAtIndex:0];
+}
+
+
+- (NSString*)canonicalStringFromTags:(NSArray*)tags
+{
+    if (![tags count])
+        return @"";
+    
+    NSArray* sortedTags = [tags sortedArrayUsingSelector:@selector(compare:)];
+    NSString* tagString = [sortedTags componentsJoinedByString:@","];
+    return tagString;
+}
+
+
+- (void)emitURL:(NSURL*)URL tags:(NSArray*)tags
+{
+    NSString* tagString = (_outputFlags & OutputFlagsTags) ? [self canonicalStringFromTags:tags] : nil;
+    NSString* fileName = (_outputFlags & OutputFlagsName) ? [URL relativePath] : nil;
+    
+    if (tagString && fileName)
+    {
+        // Print the file and tags, with a generally fixed field format for the filename
+        NSString* fileField = [self string:fileName paddedToMinimumLength:31];
+        Printf(@"%@\t%@\n", fileField, tagString);
+    }
+    else if (fileName)
+    {
+        Printf(@"%@\n", fileName);
+    }
+    else if (tagString)
+    {
+        Printf(@"%@\n", tagString);
+    }
 }
 
 
@@ -294,6 +402,7 @@ static void Printf(NSString* fmt, ...)
 
 - (void)doMatch
 {
+    BOOL matchAny = [self wildcardInArray:self.tags];
     NSSet* requiredTags = [NSSet setWithArray:self.tags];
 
     // Display only those items containing all the tags listed
@@ -306,23 +415,11 @@ static void Printf(NSString* fmt, ...)
         if (![URL getResourceValue:&tags forKey:NSURLTagNamesKey error:&error])
             [self reportFatalError:error onURL:URL];
         
-        NSSet* tagSet = [NSSet setWithArray:tags];
-        
         // If the set of existing tags contains all of the required
         // tags then print the path
-        if ([requiredTags isSubsetOfSet:tagSet])
-            Printf(@"%@\n", [URL relativePath]);
+        if ((matchAny && [tags count]) || [requiredTags isSubsetOfSet:[NSSet setWithArray:tags]])
+            [self emitURL:URL tags:tags];
     }
-}
-
-
-- (NSString*)string:(NSString*)s paddedToMinimumLength:(int)minLength
-{
-    NSInteger length = [s length];
-    if (length >= minLength)
-        return s;
-    
-    return [s stringByPaddingToLength:minLength withString:@"    " startingAtIndex:0];
 }
 
 
@@ -336,15 +433,7 @@ static void Printf(NSString* fmt, ...)
         if (![URL getResourceValue:&tags forKey:NSURLTagNamesKey error:&error])
             [self reportFatalError:error onURL:URL];
         
-        // Canonicalize the tag order
-        tags = [tags sortedArrayUsingSelector:@selector(compare:)];
-        
-        NSString* tagString = [tags count] ? [tags componentsJoinedByString:@","] : @"";
-        NSString* fileName = [URL relativePath];
-
-        // Print the file and tags, with a generally fixed field format for the filename
-        NSString* fileField = [self string:fileName paddedToMinimumLength:31];
-        Printf(@"%@\t%@\n", fileField, tagString);
+        [self emitURL:URL tags:tags];
     }
 }
 
@@ -370,8 +459,11 @@ static void Printf(NSString* fmt, ...)
     NSAssert([tags count], @"Assumes there are tags to query for");
     
     NSPredicate* result;
-    
-    if ([tags count] == 1)
+    if ([self wildcardInArray:tags])
+    {
+        result = [NSPredicate predicateWithFormat:@"kMDItemUserTags LIKE '*'"];
+    }
+    else if ([tags count] == 1)
     {
         result = [NSPredicate predicateWithFormat:@"kMDItemUserTags == %@", tags[0]];
     }
@@ -440,11 +532,13 @@ static void Printf(NSString* fmt, ...)
     
     // Print results from the query
     for (NSUInteger i = 0; i < [_metadataQuery resultCount]; i++) {
-        NSMetadataItem *theResult = [_metadataQuery resultAtIndex:i];
+        NSMetadataItem* theResult = [_metadataQuery resultAtIndex:i];
         
         // kMDItemPath, kMDItemDisplayName
-        NSString *path = [theResult valueForAttribute:(NSString *)kMDItemPath];
-        Printf(@"%@\n", path);
+        NSURL* URL = [NSURL fileURLWithPath:[theResult valueForAttribute:(NSString *)kMDItemPath]];
+        NSArray* tags = [theResult valueForAttribute:@"kMDItemUserTags"];
+
+        [self emitURL:URL tags:tags];
     }
     
     // Remove the notification observers
