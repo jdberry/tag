@@ -92,7 +92,7 @@ If you just want tags, but not filenames, turn off display of files:
 	
 ### Find all files on the filesystem with tag(s)
 
-The *find* operation searches across your local filesystem for all files that contain the specified tags.
+The *find* operation searches across your local filesystem for all files that contain the specified tags. This uses the same filesystem metadata database that Spotlight uses, so it is fast.
 
 	tag --find tagname
 	tag --find tagname,tagname2...
