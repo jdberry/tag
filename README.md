@@ -40,9 +40,9 @@ The *remove* operation removes one or more tags from the specified files.
 	tag --remove tagname file
 	tag --remove tagname1,tagname2,... file1 file2...
 	
-To remove all tags from a file, use:
+To remove all tags from a file, use the wildcard * to match all tags:
 
-	tag --set "" file1 file2...
+	tag --remove \* file
 
 ### Set tag(s) on a file
 
@@ -58,7 +58,7 @@ The *match* operation prints the file names that match the specified tags.  Matc
 	tag --match tagname *
 	tag --match tagname1,tagname2,... file1 file2...
 	
-You can use a wildcard (*) character in the tags list to match against any/all tags. The so to display all files in the current directory that have any sort of tag, use:
+You can use a wildcard (*) character in the tags list to match against any/all tags. Note, however, that you'll need to quote that * against shell expansion. To display all files in the current directory that have any sort of tag, use:
 
 	tag --match \* *
 	

@@ -394,6 +394,7 @@ static void Printf(NSString* fmt, ...)
 
 - (void)doRemove
 {
+    BOOL matchAny = [self wildcardInArray:self.tags];
     NSSet* tagsToRemove = [NSSet setWithArray:self.tags];
     
     for (NSURL* URL in self.URLs)
@@ -407,7 +408,10 @@ static void Printf(NSString* fmt, ...)
         
         // Form a set containing difference of the existing tags - tags to remove
         NSMutableSet* tagSet = [[NSMutableSet alloc] initWithArray:existingTags];
-        [tagSet minusSet:tagsToRemove];
+        if (matchAny)
+            [tagSet removeAllObjects];
+        else
+            [tagSet minusSet:tagsToRemove];
         
         // Set the revised tags onto the item
         if (![URL setResourceValue:[tagSet allObjects] forKey:NSURLTagNamesKey error:&error])
