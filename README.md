@@ -76,7 +76,7 @@ You may use short options as well. The following is equivalent to the previous c
 
 ### List the tag(s) on a file
 
-This *list* operation lists all the tags for each file.
+This *list* operation lists all the tags for each file specified.
 	
 	tag --list file
 	tag --list file1 file2...
@@ -89,7 +89,7 @@ You can turn on garrulous mode for *list* as well:
 
 	tag -g *
 	
-If you just want tags, but not filenames, turn off display of files:
+If you just want to see tags, but not filenames, turn off display of files:
 
 	tag --no-file *
 	
