@@ -35,12 +35,12 @@
     tag --find tagname,tagname
     tag --list filename
  
-    also:
-    
-        --name, --no-name
-        --tags, --no-tags
-        --version
-        --help
+    additional options:
+        --name, --no-name           Override the display of filenames in output for the operation
+        --tags, --no-tags           Override the display of tags in output for the operation
+        --garrulous, --no-garrulous Override the garrulous formatting of tags (each on own line)
+        --version                   Display the version
+        --help                      Display help
  */
 
 
@@ -122,6 +122,8 @@ static void Printf(NSString* fmt, ...)
         { "no-name",    no_argument,            0,              'N' },
         { "tags",       no_argument,            0,              't' },
         { "no-tags",    no_argument,            0,              'T' },
+        { "garrulous",  no_argument,            0,              'g' },
+        { "no-garrulous", no_argument,          0,              'G' },
 
         // other
         { "help",       no_argument,            0,              'h' },
@@ -133,10 +135,11 @@ static void Printf(NSString* fmt, ...)
     // Process Options
     int name_flag = 0;
     int tags_flag = 0;
+    int garrulous_flag = 0;
     
     int option_char;
     int option_index;
-    while ((option_char = getopt_long(argc, argv, "s:a:r:m:f:lnNtThv", options, &option_index)) != -1)
+    while ((option_char = getopt_long(argc, argv, "s:a:r:m:f:lnNtTgGhv", options, &option_index)) != -1)
     {
         switch (option_char)
         {
@@ -172,6 +175,13 @@ static void Printf(NSString* fmt, ...)
                 tags_flag = 1;
                 break;
                 
+            case 'g':
+                garrulous_flag = 2;
+                break;
+            case 'G':
+                garrulous_flag = 1;
+                break;
+                
             case 'h':
                 [self displayHelp];
                 break;
@@ -193,8 +203,10 @@ static void Printf(NSString* fmt, ...)
         _outputFlags = (_outputFlags & ~OutputFlagsName) | ((name_flag - 1) * OutputFlagsName);
     if (tags_flag)
         _outputFlags = (_outputFlags & ~OutputFlagsTags) | ((tags_flag - 1) * OutputFlagsTags);
+    if (garrulous_flag)
+        _outputFlags = (_outputFlags & ~OutputFlagsGarrulous) | ((garrulous_flag - 1) * OutputFlagsGarrulous);
     
-    // Process path names into URLs
+    // Process any remaining arguments as pathnames, converting into URLs
     NSMutableArray* URLs = [NSMutableArray new];
     while (optind < argc)
         [URLs addObject:[NSURL fileURLWithPath:[NSString stringWithUTF8String:argv[optind++]]]];
@@ -246,12 +258,9 @@ static void Printf(NSString* fmt, ...)
            "        -N | --no-name      Turn off filename display in output (list)\n"
            "        -t | --tags         Turn on tags display in output (find, match)\n"
            "        -T | --no-tags      Turn off tags display in output (list)\n"
+           "        -g | --garrulous    Display tags each on own line (list, find, match)\n"
+           "        -G | --no-garrulous Display tags comma separated after filename (default)\n"
     );
-    
-    /*
-     tag --name --tags
-     tag --no-name --no-tags
-     */
 }
 
 
@@ -310,27 +319,34 @@ static void Printf(NSString* fmt, ...)
 }
 
 
-- (NSString*)canonicalStringFromTags:(NSArray*)tags
-{
-    if (![tags count])
-        return @"";
-    
-    NSArray* sortedTags = [tags sortedArrayUsingSelector:@selector(compare:)];
-    NSString* tagString = [sortedTags componentsJoinedByString:@","];
-    return tagString;
-}
-
-
 - (void)emitURL:(NSURL*)URL tags:(NSArray*)tags
 {
-    NSString* tagString = (_outputFlags & OutputFlagsTags) ? [self canonicalStringFromTags:tags] : nil;
+    NSString* tagString = nil;
+    NSString* tagSeparator;
+    int minFileFieldWidth = 0;
+    if ((_outputFlags & OutputFlagsTags) && [tags count])
+    {
+        NSArray* sortedTags = [tags sortedArrayUsingSelector:@selector(compare:)];
+        if (_outputFlags & OutputFlagsGarrulous)
+        {
+            tagSeparator = @"\n    ";
+            tagString = [sortedTags componentsJoinedByString:tagSeparator];
+        }
+        else
+        {
+            tagSeparator = @"\t";
+            tagString = [sortedTags componentsJoinedByString:@","];
+            minFileFieldWidth = 31;
+        }
+    }
+    
     NSString* fileName = (_outputFlags & OutputFlagsName) ? [URL relativePath] : nil;
     
     if (tagString && fileName)
     {
         // Print the file and tags, with a generally fixed field format for the filename
-        NSString* fileField = [self string:fileName paddedToMinimumLength:31];
-        Printf(@"%@\t%@\n", fileField, tagString);
+        NSString* fileField = [self string:fileName paddedToMinimumLength:minFileFieldWidth];
+        Printf(@"%@%@%@\n", fileField, tagSeparator, tagString);
     }
     else if (fileName)
     {

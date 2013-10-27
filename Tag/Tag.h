@@ -41,6 +41,7 @@ typedef NS_ENUM(int, OperationMode) {
 typedef NS_OPTIONS(int, OutputFlags) {
     OutputFlagsName         = (1 << 0),
     OutputFlagsTags         = (1 << 1),
+    OutputFlagsGarrulous    = (1 << 2),
 };
 
 @interface Tag : NSObject
