@@ -104,7 +104,6 @@ Omissions
 The following features have been contemplated for future enhancement:
 
 * A binary installer
-* A better format for the output of list
 * The ability to control the search scope so that you can search across mounted network volumes instead of just local files
 * A fleshed-out man page
 * The ability to display and/or set tag colors

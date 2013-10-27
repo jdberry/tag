@@ -316,6 +316,16 @@ static void Printf(NSString* fmt, ...)
 }
 
 
+- (NSString*)string:(NSString*)s paddedToMinimumLength:(int)minLength
+{
+    NSInteger length = [s length];
+    if (length >= minLength)
+        return s;
+    
+    return [s stringByPaddingToLength:minLength withString:@"    " startingAtIndex:0];
+}
+
+
 - (void)doList
 {
     // List the tags for each item
@@ -325,7 +335,16 @@ static void Printf(NSString* fmt, ...)
         NSArray* tags;
         if (![URL getResourceValue:&tags forKey:NSURLTagNamesKey error:&error])
             [self reportFatalError:error onURL:URL];
-        Printf(@"%@\t%@\n", [URL relativePath], [tags count] ? [tags componentsJoinedByString:@","] : @"");
+        
+        // Canonicalize the tag order
+        tags = [tags sortedArrayUsingSelector:@selector(compare:)];
+        
+        NSString* tagString = [tags count] ? [tags componentsJoinedByString:@","] : @"";
+        NSString* fileName = [URL relativePath];
+
+        // Print the file and tags, with a generally fixed field format for the filename
+        NSString* fileField = [self string:fileName paddedToMinimumLength:31];
+        Printf(@"%@\t%@\n", fileField, tagString);
     }
 }
 
