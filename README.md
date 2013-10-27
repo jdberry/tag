@@ -70,7 +70,7 @@ Turn on garrulous output to format those tags onto multiple lines:
 
 	tag --match \* --tags --garrulous *
 
-You may use short options as well. The following is equivalent to the proceeding:
+You may use short options as well. The following is equivalent to the previous command:
 
 	tag -tgm \* *
 
@@ -154,7 +154,7 @@ The following features have been contemplated for future enhancement:
 
 * A binary installer
 * The ability to control the search scope so that you can search across mounted network volumes instead of just local files
-* A fleshed-out man page
+* A man page
 * The ability to display and/or set tag colors
 
 But the command is very usable in current form, modulo your testing.
