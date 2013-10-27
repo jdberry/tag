@@ -17,7 +17,7 @@ Usage
         tag -m | --match <tags> <file>...   Display files with matching tags
         tag -l | --list <file>...           List the tags on file
         tag -f | --find <tags>              Find all files with tags
-      <tags> is be a comma-separated list of tag names.
+      <tags> is a comma-separated list of tag names.
 
 ### Add tag(s) to a file:
 
