@@ -7,24 +7,27 @@ Usage
 
 ### Synopsis
 
-	tag - A tool for manipulating and querying file tags.
-	  usage:
-		tag -a | --add <tags> <file>...     Add tags to file
-		tag -r | --remove <tags> <file>...  Remove tags from file
-		tag -s | --set <tags> <file>...     Set tags on file
-		tag -m | --match <tags> <file>...   Display files with matching tags
-		tag -l | --list <file>...           List the tags on file
-		tag -f | --find <tags>              Find all files with tags
-	  <tags> is a comma-separated list of tag names; use * to match/find any tag.
-	  additional options:
-			-v | --version      Display app version
-			-h | --help         Display this help
-			-n | --name         Turn on filename display in output (default)
-			-N | --no-name      Turn off filename display in output (list)
-			-t | --tags         Turn on tags display in output (find, match)
-			-T | --no-tags      Turn off tags display in output (list)
-			-g | --garrulous    Display tags each on own line (list, find, match)
-			-G | --no-garrulous Display tags comma separated after filename (default)
+    tag - A tool for manipulating and querying file tags.
+      usage:
+        tag -a | --add <tags> <file>...     Add tags to file
+        tag -r | --remove <tags> <file>...  Remove tags from file
+        tag -s | --set <tags> <file>...     Set tags on file
+        tag -m | --match <tags> <file>...   Display files with matching tags
+        tag -l | --list <file>...           List the tags on file
+        tag -f | --find <tags>              Find all files with tags
+      <tags> is a comma-separated list of tag names; use * to match/find any tag.
+      additional options:
+            -v | --version      Display app version
+            -h | --help         Display this help
+            -n | --name         Turn on filename display in output (default)
+            -N | --no-name      Turn off filename display in output (list)
+            -t | --tags         Turn on tags display in output (find, match)
+            -T | --no-tags      Turn off tags display in output (list)
+            -g | --garrulous    Display tags each on own line (list, find, match)
+            -G | --no-garrulous Display tags comma separated after filename (default)
+            -H | --home         Find tagged files only in user home directory
+            -L | --local        Find tagged files only in home + local filesystems (default)
+            -R | --network      Find tagged files only in home + local + network filesystems
 
 ### Add tag(s) to a file
 
@@ -107,6 +110,14 @@ You can use the wildcard here too to find all files that contain a tag of any na
 And of course you could turn on display of tag names, and even ask it to be garrulous, which displays all files on your system with tags, listing the tags independently on lines below the file names.
 
 	tag --tgf \*
+    
+*find* will by default find files within the user home directory + the local filesystem. You may change the search scope to find only within the user home directory, or to include mounted network filesystems.
+
+    tag --find tag --home
+    tag --find tag --local
+    tag --find tag --network
+    
+Search scopes are additive; searching in network will also search local and home, etc.
 
 ### Get help
 
@@ -153,7 +164,6 @@ Omissions
 The following features have been contemplated for future enhancement:
 
 * A binary installer
-* The ability to control the search scope so that you can search across mounted network volumes instead of just local files
 * A man page
 * The ability to display and/or set tag colors
 

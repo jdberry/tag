@@ -39,6 +39,9 @@
         --name, --no-name           Override the display of filenames in output for the operation
         --tags, --no-tags           Override the display of tags in output for the operation
         --garrulous, --no-garrulous Override the garrulous formatting of tags (each on own line)
+        --home                      Find only files within the user home directory
+        --local                     Find files only within the home directory and on local filesystems
+        --network                   Additionally, find files on attached remove filesystems
         --version                   Display the version
         --help                      Display help
  */
@@ -124,6 +127,11 @@ static void Printf(NSString* fmt, ...)
         { "no-tags",    no_argument,            0,              'T' },
         { "garrulous",  no_argument,            0,              'g' },
         { "no-garrulous", no_argument,          0,              'G' },
+        
+        // Search Scope
+        { "home",       no_argument,            0,              'H' },
+        { "local",      no_argument,            0,              'L' },
+        { "network",    no_argument,            0,              'R' },
 
         // other
         { "help",       no_argument,            0,              'h' },
@@ -131,6 +139,14 @@ static void Printf(NSString* fmt, ...)
         
         { 0,            0,                      0,              0 }
     };
+    
+    // Initialize to a known state
+    self.operationMode = OperationModeUnknown;
+    self.outputFlags = 0;
+    self.searchScope = SearchScopeLocal;
+    
+    self.tags = nil;
+    self.URLs = nil;
     
     // Process Options
     int name_flag = 0;
@@ -149,6 +165,7 @@ static void Printf(NSString* fmt, ...)
             case OperationModeMatch:
             case OperationModeFind:
             case OperationModeList:
+            {
                 if (self.operationMode)
                 {
                     FPrintf(stderr, @"Operation mode cannot be respecified\n");
@@ -160,6 +177,7 @@ static void Printf(NSString* fmt, ...)
                     [self parseTagsArgument:[NSString stringWithUTF8String:optarg]];
                 
                 break;
+            }
                 
             case 'n':
                 name_flag = 2;
@@ -182,6 +200,16 @@ static void Printf(NSString* fmt, ...)
                 garrulous_flag = 1;
                 break;
                 
+            case 'H':
+                _searchScope = SearchScopeHome;
+                break;
+            case 'L':
+                _searchScope = SearchScopeLocal;
+                break;
+            case 'R':
+                _searchScope = SearchScopeNetwork;
+                break;
+
             case 'h':
                 [self displayHelp];
                 break;
@@ -264,6 +292,9 @@ static void Printf(NSString* fmt, ...)
            "        -T | --no-tags      Turn off tags display in output (list)\n"
            "        -g | --garrulous    Display tags each on own line (list, find, match)\n"
            "        -G | --no-garrulous Display tags comma separated after filename (default)\n"
+           "        -H | --home         Find tagged files only in user home directory\n"
+           "        -L | --local        Find tagged files only in home + local filesystems (default)\n"
+           "        -R | --network      Find tagged files only in home + local + network filesystems\n"
     );
 }
 
@@ -506,6 +537,25 @@ static void Printf(NSString* fmt, ...)
 }
 
 
+- (NSArray*)searchScopesFromSearchScope:(SearchScope)scope
+{
+    NSArray* result;
+    switch (scope)
+    {
+        case SearchScopeHome:
+            result = @[NSMetadataQueryUserHomeScope];
+            break;
+        case SearchScopeLocal:
+            result = @[NSMetadataQueryLocalComputerScope];
+            break;
+        case SearchScopeNetwork:
+            result = @[NSMetadataQueryLocalComputerScope,NSMetadataQueryNetworkScope];
+            break;
+    }
+    return result;
+}
+
+
 - (void)initiateMetadataSearchForTags:(NSArray*)tags
 {
     // Create the metadata query instance
@@ -527,7 +577,7 @@ static void Printf(NSString* fmt, ...)
     [_metadataQuery setPredicate:searchPredicate];
     
     // Set the search scope
-    NSArray *searchScopes = @[NSMetadataQueryLocalComputerScope];
+    NSArray *searchScopes = [self searchScopesFromSearchScope:self.searchScope];
     [_metadataQuery setSearchScopes:searchScopes];
     
     // Configure the sorting of the results

@@ -44,10 +44,17 @@ typedef NS_OPTIONS(int, OutputFlags) {
     OutputFlagsGarrulous    = (1 << 2),
 };
 
+typedef NS_ENUM(int, SearchScope) {
+    SearchScopeHome         = 0,
+    SearchScopeLocal,
+    SearchScopeNetwork,
+};
+
 @interface Tag : NSObject
 
 @property (assign, nonatomic) OperationMode operationMode;
 @property (assign, nonatomic) OutputFlags outputFlags;
+@property (assign, nonatomic) SearchScope searchScope;
 
 @property (copy, nonatomic) NSArray* tags;
 @property (copy, nonatomic) NSArray* URLs;
