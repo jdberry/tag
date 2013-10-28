@@ -24,7 +24,7 @@ Usage
             -t | --tags         Turn on tags display in output (find, match)
             -T | --no-tags      Turn off tags display in output (list)
             -g | --garrulous    Display tags each on own line (list, find, match)
-            -G | --no-garrulous Display tags comma separated after filename (default)
+            -G | --no-garrulous Display tags comma-separated after filename (default)
             -H | --home         Find tagged files only in user home directory
             -L | --local        Find tagged files only in home + local filesystems (default)
             -R | --network      Find tagged files only in home + local + network filesystems

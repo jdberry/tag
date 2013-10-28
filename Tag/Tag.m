@@ -291,7 +291,7 @@ static void Printf(NSString* fmt, ...)
            "        -t | --tags         Turn on tags display in output (find, match)\n"
            "        -T | --no-tags      Turn off tags display in output (list)\n"
            "        -g | --garrulous    Display tags each on own line (list, find, match)\n"
-           "        -G | --no-garrulous Display tags comma separated after filename (default)\n"
+           "        -G | --no-garrulous Display tags comma-separated after filename (default)\n"
            "        -H | --home         Find tagged files only in user home directory\n"
            "        -L | --local        Find tagged files only in home + local filesystems (default)\n"
            "        -R | --network      Find tagged files only in home + local + network filesystems\n"
