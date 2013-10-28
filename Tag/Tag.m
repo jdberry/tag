@@ -254,7 +254,11 @@ static void Printf(NSString* fmt, ...)
     // Form the unique set of tags
     NSMutableSet* uniqueTags = [NSMutableSet new];
     for (NSString* component in components)
-        [uniqueTags addObject:[component stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
+    {
+        NSString* trimmed = [component stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+        if ([trimmed length])
+            [uniqueTags addObject:trimmed];
+    }
     
     self.tags = [uniqueTags allObjects];
 }
