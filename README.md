@@ -101,7 +101,7 @@ If you just want to see tags, but not filenames, turn off display of files:
 The *find* operation searches across your local filesystem for all files that contain the specified tags. This uses the same filesystem metadata database that Spotlight uses, so it is fast.
 
 	tag --find tagname
-	tag --find tagname,tagname2...
+	tag --find tagname1,tagname2...
 	
 You can use the wildcard here too to find all files that contain a tag of any name:
 
@@ -113,9 +113,9 @@ And of course you could turn on display of tag names, and even ask it to be garr
     
 *find* will by default find files within the user home directory + the local filesystem. You may change the search scope to find only within the user home directory, or to include mounted network filesystems.
 
-    tag --find tag --home
-    tag --find tag --local
-    tag --find tag --network
+    tag --find tagname --home
+    tag --find tagname --local
+    tag --find tagname --network
     
 Search scopes are additive; searching in network will also search local and home, etc.
 
@@ -157,7 +157,7 @@ Hints:
 * Wherever a "file" is expected, a list of files may be used instead. These are provided as separate parameters.
 * Note that directories can be tagged as well, so directories may be specified instead of files.
 * The operation selector --add, --remove, --set, --match, --list, or --find may be abbreviated as -a, -r, -s, -m, -l, or -f, respectively. All of the options have a short version, in fact. See see the synopsis above, or output from help.
-* If no operation selector is given, --list is assumed.
+* If no operation selector is given, the operation will default to *list*
 
 Omissions
 ---
