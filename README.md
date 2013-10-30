@@ -56,7 +56,7 @@ The *set* operaration replaces all tags on the specified files with one or more 
 
 ### Show files matching tags
 
-The *match* operation prints the file names that match the specified tags.  Matched files must have at least *all* of the tags specified. Note that *match* matches only against the files that are provided as parameters. To search for tagged files across your  filesystem, see the *find* operation.
+The *match* operation prints the file names that match the specified tags.  Matched files must have at least *all* of the tags specified. Note that *match* matches only against the files that are provided as parameters. To search for tagged files across your filesystem, see the *find* operation.
 
 	tag --match tagname file
 	tag --match tagname1,tagname2,... file1 file2...
@@ -65,7 +65,7 @@ You can use a wildcard (*) character in the tags list to match against any/all t
 
 	tag --match \* *
 	
-Turn on --tags display mode for this operation to additionally show the tags on file:
+Turn on --tags display mode for this operation to additionally show the tags on the file:
 
 	tag --match \* --tags *
 
@@ -132,9 +132,9 @@ There is no binary installer yet, but you may install **tag** using the followin
 
 	sudo port install tag
 	
-### Brew
+### Homebrew
 	
-brew maintainers: let me know when you get it done.
+Homebrew maintainers: let me know when you have it.
 
 Building and Installing
 ---
@@ -167,8 +167,9 @@ Omissions
 ---
 The following features have been contemplated for future enhancement:
 
-* A binary installer
+* A -0 option to specify NUL separated output for use with xargs
 * A man page
+* A binary installer
 * The ability to display and/or set tag colors
 
 But the command is very usable in current form, modulo your testing.
