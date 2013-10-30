@@ -34,7 +34,7 @@ Usage
 The *add* operation adds one or more tags to the specified files without modifying any tags already there.
 
 	tag --add tagname file
-	tag --add tagname1,tagname2 file1 file2...
+	tag --add tagname1,tagname2,... file1 file2...
 	
 ### Remove tags from a file
 
@@ -49,7 +49,7 @@ To remove all tags from a file, use the wildcard * to match all tags:
 
 ### Set tags on a file
 
-The *set* operaration replaces all tags on the specified files with one or more new tags.
+The *set* operation replaces all tags on the specified files with one or more new tags.
 
 	tag --set tagname file
 	tag --set tagname1,tagname2,... file1 file2...
