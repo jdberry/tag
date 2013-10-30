@@ -51,7 +51,7 @@
 #import <getopt.h>
 
 
-NSString* const version = @"0.7";
+NSString* const version = @"0.7.1";
 
 
 @interface Tag ()
@@ -415,20 +415,22 @@ static void Printf(NSString* fmt, ...)
 {
     for (NSURL* URL in self.URLs)
     {
-        NSError* error;
-        
-        // Get the existing tags
-        NSArray* existingTags;
-        if (![URL getResourceValue:&existingTags forKey:NSURLTagNamesKey error:&error])
-            [self reportFatalError:error onURL:URL];
-        
-        // Form the union of the existing tags + new tags
-        NSMutableSet* tagSet = [[NSMutableSet alloc] initWithArray:existingTags];
-        [tagSet addObjectsFromArray:self.tags];
-        
-        // Set all the new tags onto the item
-        if (![URL setResourceValue:[tagSet allObjects] forKey:NSURLTagNamesKey error:&error])
-            [self reportFatalError:error onURL:URL];
+        @autoreleasepool {
+            NSError* error;
+            
+            // Get the existing tags
+            NSArray* existingTags;
+            if (![URL getResourceValue:&existingTags forKey:NSURLTagNamesKey error:&error])
+                [self reportFatalError:error onURL:URL];
+            
+            // Form the union of the existing tags + new tags
+            NSMutableSet* tagSet = [[NSMutableSet alloc] initWithArray:existingTags];
+            [tagSet addObjectsFromArray:self.tags];
+            
+            // Set all the new tags onto the item
+            if (![URL setResourceValue:[tagSet allObjects] forKey:NSURLTagNamesKey error:&error])
+                [self reportFatalError:error onURL:URL];
+        }
     }
 }
 
@@ -440,23 +442,25 @@ static void Printf(NSString* fmt, ...)
     
     for (NSURL* URL in self.URLs)
     {
-        NSError* error;
-        
-        // Get the existing tags from the URL
-        NSArray* existingTags;
-        if (![URL getResourceValue:&existingTags forKey:NSURLTagNamesKey error:&error])
-            [self reportFatalError:error onURL:URL];
-        
-        // Form a set containing difference of the existing tags - tags to remove
-        NSMutableSet* tagSet = [[NSMutableSet alloc] initWithArray:existingTags];
-        if (matchAny)
-            [tagSet removeAllObjects];
-        else
-            [tagSet minusSet:tagsToRemove];
-        
-        // Set the revised tags onto the item
-        if (![URL setResourceValue:[tagSet allObjects] forKey:NSURLTagNamesKey error:&error])
-            [self reportFatalError:error onURL:URL];
+        @autoreleasepool {
+            NSError* error;
+            
+            // Get the existing tags from the URL
+            NSArray* existingTags;
+            if (![URL getResourceValue:&existingTags forKey:NSURLTagNamesKey error:&error])
+                [self reportFatalError:error onURL:URL];
+            
+            // Form a set containing difference of the existing tags - tags to remove
+            NSMutableSet* tagSet = [[NSMutableSet alloc] initWithArray:existingTags];
+            if (matchAny)
+                [tagSet removeAllObjects];
+            else
+                [tagSet minusSet:tagsToRemove];
+            
+            // Set the revised tags onto the item
+            if (![URL setResourceValue:[tagSet allObjects] forKey:NSURLTagNamesKey error:&error])
+                [self reportFatalError:error onURL:URL];
+        }
     }
 }
 
@@ -469,17 +473,19 @@ static void Printf(NSString* fmt, ...)
     // Display only those items containing all the tags listed
     for (NSURL* URL in self.URLs)
     {
-        NSError* error;
-
-        // Get the tags on the URL
-        NSArray* tags;
-        if (![URL getResourceValue:&tags forKey:NSURLTagNamesKey error:&error])
-            [self reportFatalError:error onURL:URL];
-        
-        // If the set of existing tags contains all of the required
-        // tags then print the path
-        if ((matchAny && [tags count]) || [requiredTags isSubsetOfSet:[NSSet setWithArray:tags]])
-            [self emitURL:URL tags:tags];
+        @autoreleasepool {
+            NSError* error;
+            
+            // Get the tags on the URL
+            NSArray* tags;
+            if (![URL getResourceValue:&tags forKey:NSURLTagNamesKey error:&error])
+                [self reportFatalError:error onURL:URL];
+            
+            // If the set of existing tags contains all of the required
+            // tags then print the path
+            if ((matchAny && [tags count]) || [requiredTags isSubsetOfSet:[NSSet setWithArray:tags]])
+                [self emitURL:URL tags:tags];
+        }
     }
 }
 
@@ -489,12 +495,14 @@ static void Printf(NSString* fmt, ...)
     // List the tags for each item
     for (NSURL* URL in self.URLs)
     {
-        NSError* error;
-        NSArray* tags;
-        if (![URL getResourceValue:&tags forKey:NSURLTagNamesKey error:&error])
-            [self reportFatalError:error onURL:URL];
-        
-        [self emitURL:URL tags:tags];
+        @autoreleasepool {
+            NSError* error;
+            NSArray* tags;
+            if (![URL getResourceValue:&tags forKey:NSURLTagNamesKey error:&error])
+                [self reportFatalError:error onURL:URL];
+            
+            [self emitURL:URL tags:tags];
+        }
     }
 }
 
@@ -611,14 +619,17 @@ static void Printf(NSString* fmt, ...)
     [_metadataQuery stopQuery];
     
     // Print results from the query
-    for (NSUInteger i = 0; i < [_metadataQuery resultCount]; i++) {
-        NSMetadataItem* theResult = [_metadataQuery resultAtIndex:i];
-        
-        // kMDItemPath, kMDItemDisplayName
-        NSURL* URL = [NSURL fileURLWithPath:[theResult valueForAttribute:(NSString *)kMDItemPath]];
-        NSArray* tags = [theResult valueForAttribute:@"kMDItemUserTags"];
-
-        [self emitURL:URL tags:tags];
+    for (NSUInteger i = 0; i < [_metadataQuery resultCount]; i++)
+    {
+        @autoreleasepool {
+            NSMetadataItem* theResult = [_metadataQuery resultAtIndex:i];
+            
+            // kMDItemPath, kMDItemDisplayName
+            NSURL* URL = [NSURL fileURLWithPath:[theResult valueForAttribute:(NSString *)kMDItemPath]];
+            NSArray* tags = [theResult valueForAttribute:@"kMDItemUserTags"];
+            
+            [self emitURL:URL tags:tags];
+        }
     }
     
     // Remove the notification observers
