@@ -29,14 +29,14 @@ Usage
             -L | --local        Find tagged files only in home + local filesystems (default)
             -R | --network      Find tagged files only in home + local + network filesystems
 
-### Add tag(s) to a file
+### Add tags to a file
 
 The *add* operation adds one or more tags to the specified files without modifying any tags already there.
 
 	tag --add tagname file
 	tag --add tagname1,tagname2 file1 file2...
 	
-### Remove tag(s) from a file
+### Remove tags from a file
 
 The *remove* operation removes one or more tags from the specified files.
 	
@@ -47,16 +47,16 @@ To remove all tags from a file, use the wildcard * to match all tags:
 
 	tag --remove \* file
 
-### Set tag(s) on a file
+### Set tags on a file
 
-The *set* operaration replaces all tags on the specified files with new tags.
+The *set* operaration replaces all tags on the specified files with one or more new tags.
 
 	tag --set tagname file
 	tag --set tagname1,tagname2,... file1 file2...
 
-### Show files matching tag(s)
+### Show files matching tags
 
-The *match* operation prints the file names that match the specified tags.  Matched files must have at least *all* of the tags specified. Note that *match* matches only against the files that are provided as parameters. To search for tagged files across your local filesystem, see the *find* operation.
+The *match* operation prints the file names that match the specified tags.  Matched files must have at least *all* of the tags specified. Note that *match* matches only against the files that are provided as parameters. To search for tagged files across your  filesystem, see the *find* operation.
 
 	tag --match tagname *
 	tag --match tagname1,tagname2,... file1 file2...
@@ -65,7 +65,7 @@ You can use a wildcard (*) character in the tags list to match against any/all t
 
 	tag --match \* *
 	
-Turn on --tags display mode for this operation to additionally show those tags:
+Turn on --tags display mode for this operation to additionally show the tags on file:
 
 	tag --match \* --tags *
 
@@ -77,7 +77,7 @@ You may use short options as well. The following is equivalent to the previous c
 
 	tag -tgm \* *
 
-### List the tag(s) on a file
+### List the tags on a file
 
 This *list* operation lists all the tags for each file specified.
 	
@@ -96,9 +96,9 @@ If you just want to see tags, but not filenames, turn off display of files:
 
 	tag --no-file *
 	
-### Find all files on the filesystem with tag(s)
+### Find all files on the filesystem with specified tags
 
-The *find* operation searches across your local filesystem for all files that contain the specified tags. This uses the same filesystem metadata database that Spotlight uses, so it is fast.
+The *find* operation searches across your filesystem for all files that contain the specified tags. This uses the same filesystem metadata database that Spotlight uses, so it is fast.
 
 	tag --find tagname
 	tag --find tagname1,tagname2...
@@ -111,7 +111,7 @@ And of course you could turn on display of tag names, and even ask it to be garr
 
 	tag --tgf \*
     
-*find* will by default find files within the user home directory + the local filesystem. You may change the search scope to find only within the user home directory, or to include mounted network filesystems.
+*find* will by default find files within the user home directory + the local filesystem: the local scope. You may change the search scope to find only within the user home directory, or to include mounted network filesystems.
 
     tag --find tagname --home
     tag --find tagname --local
@@ -131,6 +131,10 @@ There is no binary installer yet, but you may install **tag** using the followin
 ### MacPorts
 
 	sudo port install tag
+	
+### Brew
+	
+brew maintainers: let me know when you get it done.
 
 Building and Installing
 ---
