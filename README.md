@@ -27,7 +27,7 @@ Usage
             -G | --no-garrulous Display tags comma-separated after filename (default)
             -H | --home         Find tagged files only in user home directory
             -L | --local        Find tagged files only in home + local filesystems (default)
-            -R | --network      Find tagged files only in home + local + network filesystems
+            -R | --network      Find tagged files in home + local + network filesystems
 
 ### Add tags to a file
 
@@ -58,7 +58,7 @@ The *set* operaration replaces all tags on the specified files with one or more 
 
 The *match* operation prints the file names that match the specified tags.  Matched files must have at least *all* of the tags specified. Note that *match* matches only against the files that are provided as parameters. To search for tagged files across your  filesystem, see the *find* operation.
 
-	tag --match tagname *
+	tag --match tagname file
 	tag --match tagname1,tagname2,... file1 file2...
 	
 You can use a wildcard (*) character in the tags list to match against any/all tags. Note, however, that you'll need to quote that * against shell expansion. To display all files in the current directory that have any combination of tags (but not _no_ tags), use:
