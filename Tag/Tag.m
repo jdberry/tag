@@ -39,7 +39,7 @@
         --name, --no-name           Override the display of filenames in output for the operation
         --tags, --no-tags           Override the display of tags in output for the operation
         --garrulous, --no-garrulous Override the garrulous formatting of tags (each on own line)
-        --home                      Find only files within the user home directory
+        --home                      Find files only within the user home directory
         --local                     Find files only within the home directory and on local filesystems
         --network                   Additionally, find files on attached remove filesystems
         --version                   Display the version
@@ -298,7 +298,7 @@ static void Printf(NSString* fmt, ...)
            "        -G | --no-garrulous Display tags comma-separated after filename (default)\n"
            "        -H | --home         Find tagged files only in user home directory\n"
            "        -L | --local        Find tagged files only in home + local filesystems (default)\n"
-           "        -R | --network      Find tagged files only in home + local + network filesystems\n"
+           "        -R | --network      Find tagged files in home + local + network filesystems\n"
     );
 }
 
