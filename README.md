@@ -94,7 +94,7 @@ You can turn on garrulous mode for *list* as well:
 	
 If you just want to see tags, but not filenames, turn off display of files:
 
-	tag --no-file *
+	tag --no-name *
 	
 ### Find all files on the filesystem with specified tags
 
