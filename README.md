@@ -109,9 +109,9 @@ You can use the wildcard here too to find all files that contain a tag of any na
 	
 And of course you could turn on display of tag names, and even ask it to be garrulous, which displays all files on your system with tags, listing the tags independently on lines below the file names.
 
-	tag --tgf \*
+	tag -tgf \*
     
-*find* will by default find files within the user home directory + the local filesystem: the local scope. You may change the search scope to find only within the user home directory, or to include mounted network filesystems.
+*find* will by default find files within the user home directory + the local filesystem: the local scope. You may limit the scope to find only within the user home directory, or expand it to include mounted network filesystems.
 
     tag --find tagname --home
     tag --find tagname --local
@@ -144,13 +144,13 @@ To build without installing:
 
 	make
 	
-This will build tag into ./bin/tag
+This will build **tag** into ./bin/tag
 
 To build and install onto your system:
 
 	make && sudo make install
 	
-This will install the tag tool at /usr/local/bin/tag
+This will install **tag** at /usr/local/bin/tag
 
 Advanced Usage
 ----
@@ -165,7 +165,7 @@ Hints:
 
 Omissions
 ---
-The following features have been contemplated for future enhancement:
+The following features are contemplated for future enhancement:
 
 * A -0 option to specify NUL separated output for use with xargs
 * A man page
