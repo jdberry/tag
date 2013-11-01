@@ -42,6 +42,7 @@ typedef NS_OPTIONS(int, OutputFlags) {
     OutputFlagsName         = (1 << 0),
     OutputFlagsTags         = (1 << 1),
     OutputFlagsGarrulous    = (1 << 2),
+    OutputFlagsNulTerminate = (1 << 3),
 };
 
 typedef NS_ENUM(int, SearchScope) {
@@ -60,6 +61,6 @@ typedef NS_ENUM(int, SearchScope) {
 @property (copy, nonatomic) NSArray* URLs;
 
 - (void)parseCommandLineArgv:(char * const *)argv argc:(int)argc;
-- (void)process;
+- (void)performOperation;
 
 @end

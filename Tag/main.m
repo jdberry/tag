@@ -36,7 +36,7 @@ int main(int argc, char * const argv[])
         Tag* tag = [Tag new];
         
         [tag parseCommandLineArgv:argv argc:argc];
-        [tag process];
+        [tag performOperation];
     }
     return 0;
 }

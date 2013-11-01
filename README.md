@@ -7,27 +7,28 @@ Usage
 
 ### Synopsis
 
-    tag - A tool for manipulating and querying file tags.
-      usage:
-        tag -a | --add <tags> <file>...     Add tags to file
-        tag -r | --remove <tags> <file>...  Remove tags from file
-        tag -s | --set <tags> <file>...     Set tags on file
-        tag -m | --match <tags> <file>...   Display files with matching tags
-        tag -l | --list <file>...           List the tags on file
-        tag -f | --find <tags>              Find all files with tags
-      <tags> is a comma-separated list of tag names; use * to match/find any tag.
-      additional options:
-            -v | --version      Display app version
-            -h | --help         Display this help
-            -n | --name         Turn on filename display in output (default)
-            -N | --no-name      Turn off filename display in output (list)
-            -t | --tags         Turn on tags display in output (find, match)
-            -T | --no-tags      Turn off tags display in output (list)
-            -g | --garrulous    Display tags each on own line (list, find, match)
-            -G | --no-garrulous Display tags comma-separated after filename (default)
-            -H | --home         Find tagged files only in user home directory
-            -L | --local        Find tagged files only in home + local filesystems (default)
-            -R | --network      Find tagged files in home + local + network filesystems
+	tag - A tool for manipulating and querying file tags.
+	  usage:
+		tag -a | --add <tags> <file>...     Add tags to file
+		tag -r | --remove <tags> <file>...  Remove tags from file
+		tag -s | --set <tags> <file>...     Set tags on file
+		tag -m | --match <tags> <file>...   Display files with matching tags
+		tag -l | --list <file>...           List the tags on file
+		tag -f | --find <tags>              Find all files with tags
+	  <tags> is a comma-separated list of tag names; use * to match/find any tag.
+	  additional options:
+			-v | --version      Display app version
+			-h | --help         Display this help
+			-n | --name         Turn on filename display in output (default)
+			-N | --no-name      Turn off filename display in output (list)
+			-t | --tags         Turn on tags display in output (find, match)
+			-T | --no-tags      Turn off tags display in output (list)
+			-g | --garrulous    Display tags each on own line (list, find, match)
+			-G | --no-garrulous Display tags comma-separated after filename (default)
+			-H | --home         Find tagged files only in user home directory
+			-L | --local        Find tagged files only in home + local filesystems (default)
+			-R | --network      Find tagged files in home + local + network filesystems
+			-0 | --nul          Terminate lines with NUL (\0) for use with xargs -0
 
 ### Add tags to a file
 
@@ -121,6 +122,8 @@ Search scopes are additive; searching in network will also search local and home
 
 ### Get help
 
+The --help option will show you the command synopsis:
+
 	tag --help
 	
 	
@@ -161,15 +164,13 @@ Hints:
 * Wherever a "file" is expected, a list of files may be used instead. These are provided as separate parameters.
 * Note that directories can be tagged as well, so directories may be specified instead of files.
 * The operation selector --add, --remove, --set, --match, --list, or --find may be abbreviated as -a, -r, -s, -m, -l, or -f, respectively. All of the options have a short version, in fact. See see the synopsis above, or output from help.
-* If no operation selector is given, the operation will default to *list*
+* If no operation selector is given, the operation will default to *list*.
+* For compatibility with Finder, tags are compared in a case-insensitive manner.
+* If you plan to pipe the output of **tag** through **xargs**, you might want to use the -0 option of each.
 
 Omissions
 ---
 The following features are contemplated for future enhancement:
 
-* A -0 option to specify NUL separated output for use with xargs
 * A man page
 * A binary installer
-* The ability to display and/or set tag colors
-
-But the command is very usable in current form, modulo your testing.

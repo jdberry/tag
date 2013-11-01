@@ -42,6 +42,7 @@
         --home                      Find files only within the user home directory
         --local                     Find files only within the home directory and on local filesystems
         --network                   Additionally, find files on attached remove filesystems
+        --nul                       Terminate lines with NUL (\0) for use with xargs -0
         --version                   Display the version
         --help                      Display help
  */
@@ -129,6 +130,7 @@ static void Printf(NSString* fmt, ...)
         { "no-tags",    no_argument,            0,              'T' },
         { "garrulous",  no_argument,            0,              'g' },
         { "no-garrulous", no_argument,          0,              'G' },
+        { "nul",        no_argument,            0,              '0' },
         
         // Search Scope
         { "home",       no_argument,            0,              'H' },
@@ -150,14 +152,15 @@ static void Printf(NSString* fmt, ...)
     self.tags = nil;
     self.URLs = nil;
     
-    // Process Options
     int name_flag = 0;
     int tags_flag = 0;
     int garrulous_flag = 0;
+    BOOL nulTerminate = NO;
     
+    // Parse Options
     int option_char;
     int option_index;
-    while ((option_char = getopt_long(argc, argv, "s:a:r:m:f:lnNtTgGhv", options, &option_index)) != -1)
+    while ((option_char = getopt_long(argc, argv, "s:a:r:m:f:lnNtTgG0hv", options, &option_index)) != -1)
     {
         switch (option_char)
         {
@@ -211,6 +214,10 @@ static void Printf(NSString* fmt, ...)
             case 'R':
                 _searchScope = SearchScopeNetwork;
                 break;
+                
+            case '0':
+                nulTerminate = YES;
+                break;
 
             case 'h':
                 [self displayHelp];
@@ -239,6 +246,9 @@ static void Printf(NSString* fmt, ...)
         _outputFlags = (_outputFlags & ~OutputFlagsTags) | ((tags_flag - 1) * OutputFlagsTags);
     if (garrulous_flag)
         _outputFlags = (_outputFlags & ~OutputFlagsGarrulous) | ((garrulous_flag - 1) * OutputFlagsGarrulous);
+    
+    if (nulTerminate)
+        _outputFlags |= OutputFlagsNulTerminate;
     
     // Process any remaining arguments as pathnames, converting into URLs
     NSMutableArray* URLs = [NSMutableArray new];
@@ -301,11 +311,12 @@ static void Printf(NSString* fmt, ...)
            "        -H | --home         Find tagged files only in user home directory\n"
            "        -L | --local        Find tagged files only in home + local filesystems (default)\n"
            "        -R | --network      Find tagged files in home + local + network filesystems\n"
+           "        -0 | --nul          Terminate lines with NUL (\\0) for use with xargs -0\n"
     );
 }
 
 
-- (void)process
+- (void)performOperation
 {
     switch (self.operationMode)
     {
@@ -359,40 +370,49 @@ static void Printf(NSString* fmt, ...)
 - (void)emitURL:(NSURL*)URL tags:(NSArray*)tagArray
 {
     NSString* fileName = (_outputFlags & OutputFlagsName) ? [URL relativePath] : nil;
-    
-    NSString* tagString = nil;
-    NSString* tagSeparator;
-    int minFileFieldWidth = 0;
-    if ((_outputFlags & OutputFlagsTags) && [tagArray count])
+    BOOL tagsOnSeparateLines = !!(_outputFlags & OutputFlagsGarrulous);
+    BOOL printTags = (_outputFlags & OutputFlagsTags) && [tagArray count];
+    char lineTerminator = (_outputFlags & OutputFlagsNulTerminate) ? '\0' : '\n';
+
+    if (fileName)
     {
+        int minFileFieldWidth = tagsOnSeparateLines ? 0 : 31;
+        NSString* fileField = [self string:fileName paddedToMinimumLength:minFileFieldWidth];
+        Printf(@"%@", fileField);
+    }
+    
+    if (printTags)
+    {
+        BOOL needLineTerm = NO;
         NSArray* sortedTags = [tagArray sortedArrayUsingSelector:@selector(compare:)];
-        if (_outputFlags & OutputFlagsGarrulous)
+    
+        NSString* tagSeparator;
+        NSString* startingSepator;
+        if (tagsOnSeparateLines)
         {
-            tagSeparator = fileName ? @"\n    " : @"\n";    // Don't indent tags if no filename
-            tagString = [sortedTags componentsJoinedByString:tagSeparator];
+            needLineTerm = !!fileName;
+            tagSeparator = fileName ? @"    " : @"";
+            startingSepator = tagSeparator;
         }
         else
         {
-            tagSeparator = @"\t";
-            tagString = [sortedTags componentsJoinedByString:@","];
-            minFileFieldWidth = 31;
+            tagSeparator = @",";
+            startingSepator = fileName ? @"\t" : @"";
+        }
+        
+        NSString* sep = startingSepator;
+        for (NSString* tag in sortedTags)
+        {
+            if (needLineTerm)
+                putc(lineTerminator, stdout);
+            Printf(@"%@%@", sep, tag);
+            sep = tagSeparator;
+            needLineTerm = tagsOnSeparateLines;
         }
     }
     
-    if (tagString && fileName)
-    {
-        // Print the file and tags, with a generally fixed field format for the filename
-        NSString* fileField = [self string:fileName paddedToMinimumLength:minFileFieldWidth];
-        Printf(@"%@%@%@\n", fileField, tagSeparator, tagString);
-    }
-    else if (fileName)
-    {
-        Printf(@"%@\n", fileName);
-    }
-    else if (tagString)
-    {
-        Printf(@"%@\n", tagString);
-    }
+    if (fileName || printTags)
+        putc(lineTerminator, stdout);
 }
 
 
