@@ -300,7 +300,7 @@ static void Printf(NSString* fmt, ...)
            "    tag -f | --find <tags>              Find all files with tags\n"
            "  <tags> is a comma-separated list of tag names; use * to match/find any tag.\n"
            "  additional options:\n"
-           "        -v | --version      Display app version\n"
+           "        -v | --version      Display version\n"
            "        -h | --help         Display this help\n"
            "        -n | --name         Turn on filename display in output (default)\n"
            "        -N | --no-name      Turn off filename display in output (list)\n"

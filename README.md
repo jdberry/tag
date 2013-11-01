@@ -17,7 +17,7 @@ Usage
 		tag -f | --find <tags>              Find all files with tags
 	  <tags> is a comma-separated list of tag names; use * to match/find any tag.
 	  additional options:
-			-v | --version      Display app version
+			-v | --version      Display version
 			-h | --help         Display this help
 			-n | --name         Turn on filename display in output (default)
 			-N | --no-name      Turn off filename display in output (list)
