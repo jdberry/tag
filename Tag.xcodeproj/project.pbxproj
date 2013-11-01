@@ -12,6 +12,7 @@
 		901F1415181B16A00007C852 /* tag.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 901F1414181B16A00007C852 /* tag.1 */; };
 		901F141D181B25F10007C852 /* Tag.m in Sources */ = {isa = PBXBuildFile; fileRef = 901F141C181B25F10007C852 /* Tag.m */; };
 		901F141F181B469E0007C852 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 901F141E181B469E0007C852 /* CoreServices.framework */; };
+		90A6AB6E1823FE7B002AE709 /* TagName.m in Sources */ = {isa = PBXBuildFile; fileRef = 90A6AB6D1823FE7B002AE709 /* TagName.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -39,6 +40,8 @@
 		901F1423181B71AF0007C852 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		901F1425181B90930007C852 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		901F1426181B90930007C852 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
+		90A6AB6C1823FE7B002AE709 /* TagName.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TagName.h; sourceTree = "<group>"; };
+		90A6AB6D1823FE7B002AE709 /* TagName.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TagName.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -90,6 +93,8 @@
 				901F1414181B16A00007C852 /* tag.1 */,
 				901F141B181B25F10007C852 /* Tag.h */,
 				901F141C181B25F10007C852 /* Tag.m */,
+				90A6AB6C1823FE7B002AE709 /* TagName.h */,
+				90A6AB6D1823FE7B002AE709 /* TagName.m */,
 				901F1412181B16A00007C852 /* Supporting Files */,
 			);
 			path = Tag;
@@ -154,6 +159,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				90A6AB6E1823FE7B002AE709 /* TagName.m in Sources */,
 				901F141D181B25F10007C852 /* Tag.m in Sources */,
 				901F1411181B16A00007C852 /* main.m in Sources */,
 			);

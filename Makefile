@@ -10,7 +10,7 @@ INSTALL		= /usr/bin/install
 BINDIR 		= ${prefix}/bin
 MANDIR		= ${prefix}/man
 
-SRCS		= Tag/main.m Tag/Tag.m
+SRCS		= Tag/main.m Tag/Tag.m Tag/TagName.m
 LIBS		= -framework Foundation \
 			  -framework CoreServices
 

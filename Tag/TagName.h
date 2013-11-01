@@ -1,8 +1,8 @@
 //
-//  Tag.h
+//  TagName.h
 //  Tag
 //
-//  Created by James Berry on 10/25/13.
+//  Created by James Berry on 11/1/13.
 //
 //  The MIT License (MIT)
 //
@@ -28,38 +28,17 @@
 
 #import <Foundation/Foundation.h>
 
-typedef NS_ENUM(int, OperationMode) {
-    OperationModeUnknown    = 0,
-    OperationModeSet        = 's',
-    OperationModeAdd        = 'a',
-    OperationModeRemove     = 'r',
-    OperationModeMatch      = 'm',
-    OperationModeFind       = 'f',
-    OperationModeList       = 'l',
-};
+// Items of this class are compared for equality in a case-insensitive fashion,
+// but retain their original case in visibleName. TagName objects are used
+// in forming sets of tags.
 
-typedef NS_OPTIONS(int, OutputFlags) {
-    OutputFlagsName         = (1 << 0),
-    OutputFlagsTags         = (1 << 1),
-    OutputFlagsGarrulous    = (1 << 2),
-};
+@interface TagName : NSObject
 
-typedef NS_ENUM(int, SearchScope) {
-    SearchScopeHome         = 0,
-    SearchScopeLocal,
-    SearchScopeNetwork,
-};
+- (instancetype)initWithTag:(NSString*)tag;
 
-@interface Tag : NSObject
+@property (readonly) NSString* visibleName;
+@property (readonly) NSString* comparableName;
 
-@property (assign, nonatomic) OperationMode operationMode;
-@property (assign, nonatomic) OutputFlags outputFlags;
-@property (assign, nonatomic) SearchScope searchScope;
-
-@property (copy, nonatomic) NSSet* tags;
-@property (copy, nonatomic) NSArray* URLs;
-
-- (void)parseCommandLineArgv:(char * const *)argv argc:(int)argc;
-- (void)process;
+- (BOOL)isEqualToTagName:(TagName*)tagName;
 
 @end

@@ -48,10 +48,12 @@
 
 
 #import "Tag.h"
+#import "TagName.h"
 #import <getopt.h>
 
+NSString* const version = @"0.7.2";
 
-NSString* const version = @"0.7.1";
+NSString* const kMDItemUserTags = @"kMDItemUserTags";
 
 
 @interface Tag ()
@@ -257,10 +259,10 @@ static void Printf(NSString* fmt, ...)
     {
         NSString* trimmed = [component stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
         if ([trimmed length])
-            [uniqueTags addObject:trimmed];
+            [uniqueTags addObject:[[TagName alloc] initWithTag:trimmed]];
     }
     
-    self.tags = [uniqueTags allObjects];
+    self.tags = uniqueTags;
 }
 
 
@@ -344,12 +346,6 @@ static void Printf(NSString* fmt, ...)
 }
 
 
-- (BOOL)wildcardInArray:(NSArray*)array
-{
-    return [array containsObject:@"*"];
-}
-
-
 - (NSString*)string:(NSString*)s paddedToMinimumLength:(int)minLength
 {
     NSInteger length = [s length];
@@ -360,16 +356,16 @@ static void Printf(NSString* fmt, ...)
 }
 
 
-- (void)emitURL:(NSURL*)URL tags:(NSArray*)tags
+- (void)emitURL:(NSURL*)URL tags:(NSArray*)tagArray
 {
     NSString* fileName = (_outputFlags & OutputFlagsName) ? [URL relativePath] : nil;
     
     NSString* tagString = nil;
     NSString* tagSeparator;
     int minFileFieldWidth = 0;
-    if ((_outputFlags & OutputFlagsTags) && [tags count])
+    if ((_outputFlags & OutputFlagsTags) && [tagArray count])
     {
-        NSArray* sortedTags = [tags sortedArrayUsingSelector:@selector(compare:)];
+        NSArray* sortedTags = [tagArray sortedArrayUsingSelector:@selector(compare:)];
         if (_outputFlags & OutputFlagsGarrulous)
         {
             tagSeparator = fileName ? @"\n    " : @"\n";    // Don't indent tags if no filename
@@ -400,12 +396,42 @@ static void Printf(NSString* fmt, ...)
 }
 
 
+- (BOOL)wildcardInTagSet:(NSSet*)set
+{
+    static TagName* wildcard;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        wildcard = [[TagName alloc] initWithTag:@"*"];
+    });
+    return [set containsObject:wildcard];
+}
+
+
+- (NSMutableSet*)tagSetFromArrayOfTags:(NSArray*)tagArray
+{
+    NSMutableSet* set = [[NSMutableSet alloc] initWithCapacity:[tagArray count]];
+    for (NSString* tag in tagArray)
+        [set addObject:[[TagName alloc] initWithTag:tag]];
+    return set;
+}
+
+
+- (NSArray*)tagArrayFromTagSet:(NSSet*)tagSet
+{
+    NSMutableArray* array = [[NSMutableArray alloc] initWithCapacity:[tagSet count]];
+    for (TagName* tag in tagSet)
+        [array addObject:tag.visibleName];
+    return array;
+}
+
+
 - (void)doSet
 {
+    NSArray* tagArray = [self tagArrayFromTagSet:self.tags];
     for (NSURL* URL in self.URLs)
     {
         NSError* error;
-        if (![URL setResourceValue:self.tags forKey:NSURLTagNamesKey error:&error])
+        if (![URL setResourceValue:tagArray forKey:NSURLTagNamesKey error:&error])
             [self reportFatalError:error onURL:URL];
     }
 }
@@ -413,6 +439,9 @@ static void Printf(NSString* fmt, ...)
 
 - (void)doAdd
 {
+    if (![self.tags count])
+        return;
+    
     for (NSURL* URL in self.URLs)
     {
         @autoreleasepool {
@@ -423,12 +452,12 @@ static void Printf(NSString* fmt, ...)
             if (![URL getResourceValue:&existingTags forKey:NSURLTagNamesKey error:&error])
                 [self reportFatalError:error onURL:URL];
             
-            // Form the union of the existing tags + new tags
-            NSMutableSet* tagSet = [[NSMutableSet alloc] initWithArray:existingTags];
-            [tagSet addObjectsFromArray:self.tags];
+            // Form the union of the existing tags + new tags.
+            NSMutableSet* tagSet = [self tagSetFromArrayOfTags:existingTags];
+            [tagSet unionSet:self.tags];
             
             // Set all the new tags onto the item
-            if (![URL setResourceValue:[tagSet allObjects] forKey:NSURLTagNamesKey error:&error])
+            if (![URL setResourceValue:[self tagArrayFromTagSet:tagSet] forKey:NSURLTagNamesKey error:&error])
                 [self reportFatalError:error onURL:URL];
         }
     }
@@ -437,8 +466,10 @@ static void Printf(NSString* fmt, ...)
 
 - (void)doRemove
 {
-    BOOL matchAny = [self wildcardInArray:self.tags];
-    NSSet* tagsToRemove = [NSSet setWithArray:self.tags];
+    if (![self.tags count])
+        return;
+    
+    BOOL matchAny = [self wildcardInTagSet:self.tags];
     
     for (NSURL* URL in self.URLs)
     {
@@ -451,14 +482,14 @@ static void Printf(NSString* fmt, ...)
                 [self reportFatalError:error onURL:URL];
             
             // Form a set containing difference of the existing tags - tags to remove
-            NSMutableSet* tagSet = [[NSMutableSet alloc] initWithArray:existingTags];
+            NSMutableSet* tagSet = [self tagSetFromArrayOfTags:existingTags];
             if (matchAny)
                 [tagSet removeAllObjects];
             else
-                [tagSet minusSet:tagsToRemove];
+                [tagSet minusSet:self.tags];
             
             // Set the revised tags onto the item
-            if (![URL setResourceValue:[tagSet allObjects] forKey:NSURLTagNamesKey error:&error])
+            if (![URL setResourceValue:[self tagArrayFromTagSet:tagSet] forKey:NSURLTagNamesKey error:&error])
                 [self reportFatalError:error onURL:URL];
         }
     }
@@ -467,8 +498,7 @@ static void Printf(NSString* fmt, ...)
 
 - (void)doMatch
 {
-    BOOL matchAny = [self wildcardInArray:self.tags];
-    NSSet* requiredTags = [NSSet setWithArray:self.tags];
+    BOOL matchAny = [self wildcardInTagSet:self.tags];
 
     // Display only those items containing all the tags listed
     for (NSURL* URL in self.URLs)
@@ -477,14 +507,14 @@ static void Printf(NSString* fmt, ...)
             NSError* error;
             
             // Get the tags on the URL
-            NSArray* tags;
-            if (![URL getResourceValue:&tags forKey:NSURLTagNamesKey error:&error])
+            NSArray* tagArray;
+            if (![URL getResourceValue:&tagArray forKey:NSURLTagNamesKey error:&error])
                 [self reportFatalError:error onURL:URL];
             
             // If the set of existing tags contains all of the required
             // tags then print the path
-            if ((matchAny && [tags count]) || [requiredTags isSubsetOfSet:[NSSet setWithArray:tags]])
-                [self emitURL:URL tags:tags];
+            if ((matchAny && [tagArray count]) || [self.tags isSubsetOfSet:[self tagSetFromArrayOfTags:tagArray]])
+                [self emitURL:URL tags:tagArray];
         }
     }
 }
@@ -497,11 +527,11 @@ static void Printf(NSString* fmt, ...)
     {
         @autoreleasepool {
             NSError* error;
-            NSArray* tags;
-            if (![URL getResourceValue:&tags forKey:NSURLTagNamesKey error:&error])
+            NSArray* tagArray;
+            if (![URL getResourceValue:&tagArray forKey:NSURLTagNamesKey error:&error])
                 [self reportFatalError:error onURL:URL];
             
-            [self emitURL:URL tags:tags];
+            [self emitURL:URL tags:tagArray];
         }
     }
 }
@@ -523,25 +553,24 @@ static void Printf(NSString* fmt, ...)
 }
 
 
-- (NSPredicate*)formQueryPredicateForTags:(NSArray*)tags
+- (NSPredicate*)formQueryPredicateForTags:(NSSet*)tagSet
 {
-    NSAssert([tags count], @"Assumes there are tags to query for");
+    NSAssert([tagSet count], @"Assumes there are tags to query for");
     
     NSPredicate* result;
-    if ([self wildcardInArray:tags])
+    if ([self wildcardInTagSet:tagSet])
     {
-        result = [NSPredicate predicateWithFormat:@"kMDItemUserTags LIKE '*'"];
+        result = [NSPredicate predicateWithFormat:@"%K LIKE '*'", kMDItemUserTags];
     }
-    else if ([tags count] == 1)
+    else if ([tagSet count] == 1)
     {
-        result = [NSPredicate predicateWithFormat:@"kMDItemUserTags == %@", tags[0]];
+        result = [NSPredicate predicateWithFormat:@"%K ==[c] %@", kMDItemUserTags, ((TagName*)tagSet.anyObject).visibleName];
     }
     else
     {
         NSMutableArray* subpredicates = [NSMutableArray new];
-        for (NSString* tag in tags)
-            [subpredicates addObject:[NSPredicate predicateWithFormat:@"kMDItemUserTags == %@", tag]];
-        
+        for (TagName* tag in tagSet)
+            [subpredicates addObject:[NSPredicate predicateWithFormat:@"%K ==[c] %@", kMDItemUserTags, tag.visibleName]];
         result = [NSCompoundPredicate andPredicateWithSubpredicates:subpredicates];
     }
     
@@ -568,7 +597,7 @@ static void Printf(NSString* fmt, ...)
 }
 
 
-- (void)initiateMetadataSearchForTags:(NSArray*)tags
+- (void)initiateMetadataSearchForTags:(NSSet*)tagSet
 {
     // Create the metadata query instance
     self.metadataQuery=[[NSMetadataQuery alloc] init];
@@ -585,7 +614,7 @@ static void Printf(NSString* fmt, ...)
                                                object:_metadataQuery];
     
     // Configure the search predicate
-    NSPredicate *searchPredicate = [self formQueryPredicateForTags:tags];
+    NSPredicate *searchPredicate = [self formQueryPredicateForTags:tagSet];
     [_metadataQuery setPredicate:searchPredicate];
     
     // Set the search scope
@@ -593,7 +622,7 @@ static void Printf(NSString* fmt, ...)
     [_metadataQuery setSearchScopes:searchScopes];
     
     // Configure the sorting of the results
-    // (note that the query can't sort by the item path, which likely makes this useless)
+    // (note that the query can't sort by the item path, which makes sorting less usefull)
     NSSortDescriptor *sortKeys = [[NSSortDescriptor alloc] initWithKey:(id)kMDItemDisplayName
                                                              ascending:YES];
     [_metadataQuery setSortDescriptors:[NSArray arrayWithObject:sortKeys]];
@@ -624,11 +653,10 @@ static void Printf(NSString* fmt, ...)
         @autoreleasepool {
             NSMetadataItem* theResult = [_metadataQuery resultAtIndex:i];
             
-            // kMDItemPath, kMDItemDisplayName
             NSURL* URL = [NSURL fileURLWithPath:[theResult valueForAttribute:(NSString *)kMDItemPath]];
-            NSArray* tags = [theResult valueForAttribute:@"kMDItemUserTags"];
+            NSArray* tagArray = [theResult valueForAttribute:kMDItemUserTags];
             
-            [self emitURL:URL tags:tags];
+            [self emitURL:URL tags:tagArray];
         }
     }
     

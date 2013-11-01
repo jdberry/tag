@@ -1,8 +1,8 @@
 //
-//  Tag.h
+//  TagName.m
 //  Tag
 //
-//  Created by James Berry on 10/25/13.
+//  Created by James Berry on 11/1/13.
 //
 //  The MIT License (MIT)
 //
@@ -26,40 +26,42 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-#import <Foundation/Foundation.h>
+#import "TagName.h"
 
-typedef NS_ENUM(int, OperationMode) {
-    OperationModeUnknown    = 0,
-    OperationModeSet        = 's',
-    OperationModeAdd        = 'a',
-    OperationModeRemove     = 'r',
-    OperationModeMatch      = 'm',
-    OperationModeFind       = 'f',
-    OperationModeList       = 'l',
-};
+@implementation TagName
 
-typedef NS_OPTIONS(int, OutputFlags) {
-    OutputFlagsName         = (1 << 0),
-    OutputFlagsTags         = (1 << 1),
-    OutputFlagsGarrulous    = (1 << 2),
-};
+- (instancetype)initWithTag:(NSString*)tag
+{
+    self = [super init];
+    if (self)
+    {
+        _visibleName = [tag copy];
+        _comparableName = [_visibleName lowercaseString];
+    }
+    return self;
+}
 
-typedef NS_ENUM(int, SearchScope) {
-    SearchScopeHome         = 0,
-    SearchScopeLocal,
-    SearchScopeNetwork,
-};
 
-@interface Tag : NSObject
+- (BOOL)isEqualToTagName:(TagName*)tagName
+{
+    return [self.comparableName isEqualToString:tagName.comparableName];
+}
 
-@property (assign, nonatomic) OperationMode operationMode;
-@property (assign, nonatomic) OutputFlags outputFlags;
-@property (assign, nonatomic) SearchScope searchScope;
 
-@property (copy, nonatomic) NSSet* tags;
-@property (copy, nonatomic) NSArray* URLs;
+- (BOOL)isEqual:(id)obj
+{
+    if (obj == self)
+        return YES;
+    if (!obj || ![obj isKindOfClass:[self class]])
+        return NO;
+    return [self isEqualToTagName:obj];
+}
 
-- (void)parseCommandLineArgv:(char * const *)argv argc:(int)argc;
-- (void)process;
+
+- (NSUInteger)hash
+{
+    return [self.comparableName hash];
+}
+
 
 @end
