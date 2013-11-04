@@ -52,7 +52,7 @@
 #import "TagName.h"
 #import <getopt.h>
 
-NSString* const version = @"0.7.2";
+NSString* const version = @"0.7.3";
 
 NSString* const kMDItemUserTags = @"kMDItemUserTags";
 
