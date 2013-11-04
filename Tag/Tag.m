@@ -352,7 +352,7 @@ static void Printf(NSString* fmt, ...)
 
 - (void)reportFatalError:(NSError*)error onURL:(NSURL*)URL
 {
-    FPrintf(stderr, @"%@: %@", [self programName], error.localizedDescription);
+    FPrintf(stderr, @"%@: %@\n", [self programName], error.localizedDescription);
     exit(2);
 }
 
