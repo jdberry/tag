@@ -577,6 +577,9 @@ static void Printf(NSString* fmt, ...)
 {
     NSAssert([tagSet count], @"Assumes there are tags to query for");
     
+    // Note for future: the following can be used to search for files that have
+    // no tags: [NSPredicate predicateWithFormat:@"NOT %K LIKE '*'", kMDItemUserTags]
+    
     NSPredicate* result;
     if ([self wildcardInTagSet:tagSet])
     {
@@ -672,11 +675,14 @@ static void Printf(NSString* fmt, ...)
     {
         @autoreleasepool {
             NSMetadataItem* theResult = [_metadataQuery resultAtIndex:i];
-            
-            NSURL* URL = [NSURL fileURLWithPath:[theResult valueForAttribute:(NSString *)kMDItemPath]];
-            NSArray* tagArray = [theResult valueForAttribute:kMDItemUserTags];
-            
-            [self emitURL:URL tags:tagArray];
+            NSString* path = [theResult valueForAttribute:(NSString *)kMDItemPath];
+            if (path)
+            {
+                NSURL* URL = [NSURL fileURLWithPath:path];
+                NSArray* tagArray = [theResult valueForAttribute:kMDItemUserTags];
+                
+                [self emitURL:URL tags:tagArray];
+            }
         }
     }
     
