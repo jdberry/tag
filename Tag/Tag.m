@@ -446,7 +446,7 @@ static void Printf(NSString* fmt, ...)
 }
 
 
-- (NSMutableSet*)tagSetFromArrayOfTags:(NSArray*)tagArray
+- (NSMutableSet*)tagSetFromTagArray:(NSArray*)tagArray
 {
     NSMutableSet* set = [[NSMutableSet alloc] initWithCapacity:[tagArray count]];
     for (NSString* tag in tagArray)
@@ -492,7 +492,7 @@ static void Printf(NSString* fmt, ...)
                 [self reportFatalError:error onURL:URL];
             
             // Form the union of the existing tags + new tags.
-            NSMutableSet* tagSet = [self tagSetFromArrayOfTags:existingTags];
+            NSMutableSet* tagSet = [self tagSetFromTagArray:existingTags];
             [tagSet unionSet:self.tags];
             
             // Set all the new tags onto the item
@@ -521,7 +521,7 @@ static void Printf(NSString* fmt, ...)
                 [self reportFatalError:error onURL:URL];
             
             // Form a set containing difference of the existing tags - tags to remove
-            NSMutableSet* tagSet = [self tagSetFromArrayOfTags:existingTags];
+            NSMutableSet* tagSet = [self tagSetFromTagArray:existingTags];
             if (matchAny)
                 [tagSet removeAllObjects];
             else
@@ -552,7 +552,7 @@ static void Printf(NSString* fmt, ...)
             
             // If the set of existing tags contains all of the required
             // tags then print the path
-            if ((matchAny && [tagArray count]) || [self.tags isSubsetOfSet:[self tagSetFromArrayOfTags:tagArray]])
+            if ((matchAny && [tagArray count]) || [self.tags isSubsetOfSet:[self tagSetFromTagArray:tagArray]])
                 [self emitURL:URL tags:tagArray];
         }
     }
