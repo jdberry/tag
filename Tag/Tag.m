@@ -173,7 +173,7 @@ static void Printf(NSString* fmt, ...)
             {
                 if (self.operationMode)
                 {
-                    FPrintf(stderr, @"Operation mode cannot be respecified\n");
+                    FPrintf(stderr, @"%@: Operation mode cannot be respecified\n", [self programName]);
                     exit(1);
                 }
                 self.operationMode = option_char;
@@ -251,9 +251,32 @@ static void Printf(NSString* fmt, ...)
         _outputFlags |= OutputFlagsNulTerminate;
     
     // Process any remaining arguments as pathnames, converting into URLs
+    [self parseFilenameArguments:&argv[optind] argc:argc - optind];
+}
+
+
+- (void)parseFilenameArguments:(char * const *)argv argc:(int)argc
+{
     NSMutableArray* URLs = [NSMutableArray new];
-    while (optind < argc)
-        [URLs addObject:[NSURL fileURLWithPath:[NSString stringWithUTF8String:argv[optind++]]]];
+    for (int arg = 0; arg < argc; ++arg)
+    {
+        // Get the path
+        NSString* path = [NSString stringWithUTF8String:argv[arg]];
+        
+        // Trim path; ignore empty parameters
+        NSString* trimmed = [path stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+        if (![trimmed length])
+            continue;
+        
+        // Add the URL to our array of URLs to process
+        NSURL* URL = [NSURL fileURLWithPath:trimmed];
+        if (!URL)
+        {
+            FPrintf(stderr, @"%@: Can't form a URL from path %@\n", [self programName], trimmed);
+            exit(3);
+        }
+        [URLs addObject:URL];
+    }
     self.URLs = URLs;
 }
 
