@@ -441,11 +441,7 @@ static void Printf(NSString* fmt, ...)
 
 - (BOOL)wildcardInTagSet:(NSSet*)set
 {
-    static TagName* wildcard;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        wildcard = [[TagName alloc] initWithTag:@"*"];
-    });
+    TagName* wildcard = [[TagName alloc] initWithTag:@"*"];
     return [set containsObject:wildcard];
 }
 
