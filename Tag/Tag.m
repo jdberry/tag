@@ -260,19 +260,16 @@ static void Printf(NSString* fmt, ...)
     NSMutableArray* URLs = [NSMutableArray new];
     for (int arg = 0; arg < argc; ++arg)
     {
-        // Get the path
+        // Get the path, ignoring empty paths
         NSString* path = [NSString stringWithUTF8String:argv[arg]];
-        
-        // Trim path; ignore empty parameters
-        NSString* trimmed = [path stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-        if (![trimmed length])
+        if (![path length])
             continue;
         
         // Add the URL to our array of URLs to process
-        NSURL* URL = [NSURL fileURLWithPath:trimmed];
+        NSURL* URL = [NSURL fileURLWithPath:path];
         if (!URL)
         {
-            FPrintf(stderr, @"%@: Can't form a URL from path %@\n", [self programName], trimmed);
+            FPrintf(stderr, @"%@: Can't form a URL from path %@\n", [self programName], path);
             exit(3);
         }
         [URLs addObject:URL];
