@@ -326,7 +326,7 @@ static void Printf(NSString* fmt, ...)
            "        -v | --version      Display version\n"
            "        -h | --help         Display this help\n"
            "        -n | --name         Turn on filename display in output (default)\n"
-           "        -N | --no-name      Turn off filename display in output (list)\n"
+           "        -N | --no-name      Turn off filename display in output (list, find, match)\n"
            "        -t | --tags         Turn on tags display in output (find, match)\n"
            "        -T | --no-tags      Turn off tags display in output (list)\n"
            "        -g | --garrulous    Display tags each on own line (list, find, match)\n"

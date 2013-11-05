@@ -20,7 +20,7 @@ Usage
 			-v | --version      Display version
 			-h | --help         Display this help
 			-n | --name         Turn on filename display in output (default)
-			-N | --no-name      Turn off filename display in output (list)
+			-N | --no-name      Turn off filename display in output (list, find, match)
 			-t | --tags         Turn on tags display in output (find, match)
 			-T | --no-tags      Turn off tags display in output (list)
 			-g | --garrulous    Display tags each on own line (list, find, match)
