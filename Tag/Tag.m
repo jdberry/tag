@@ -515,20 +515,28 @@ static void Printf(NSString* fmt, ...)
         @autoreleasepool {
             NSError* error;
             
-            // Get the existing tags from the URL
+            // Get existing tags from the URL
             NSArray* existingTags;
             if (![URL getResourceValue:&existingTags forKey:NSURLTagNamesKey error:&error])
                 [self reportFatalError:error onURL:URL];
             
-            // Form a set containing difference of the existing tags - tags to remove
-            NSMutableSet* tagSet = [self tagSetFromTagArray:existingTags];
+            // Form the revised array of tags
+            NSArray* revisedTags;
             if (matchAny)
-                [tagSet removeAllObjects];
+            {
+                // We matched the wildcard, so remove all tags from the item
+                revisedTags = [[NSArray alloc] init];
+            }
             else
+            {
+                // Existing tags minus tags to remove
+                NSMutableSet* tagSet = [self tagSetFromTagArray:existingTags];
                 [tagSet minusSet:self.tags];
+                revisedTags = [self tagArrayFromTagSet:tagSet];
+            }
             
             // Set the revised tags onto the item
-            if (![URL setResourceValue:[self tagArrayFromTagSet:tagSet] forKey:NSURLTagNamesKey error:&error])
+            if (![URL setResourceValue:revisedTags forKey:NSURLTagNamesKey error:&error])
                 [self reportFatalError:error onURL:URL];
         }
     }
