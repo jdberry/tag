@@ -129,7 +129,7 @@ The --help option will show you the command synopsis:
 	
 Prebuilt Packages
 ---
-There is no binary installer yet, but you may install **tag** using the following package managers:
+You may install **tag** using the following package managers:
 
 ### MacPorts
 
@@ -137,7 +137,7 @@ There is no binary installer yet, but you may install **tag** using the followin
 	
 ### Homebrew
 	
-Homebrew maintainers: let me know when you have it.
+	brew install tag
 
 Building and Installing
 ---
@@ -173,4 +173,3 @@ Omissions
 The following features are contemplated for future enhancement:
 
 * A man page
-* A binary installer
