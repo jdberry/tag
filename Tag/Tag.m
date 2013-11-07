@@ -684,12 +684,13 @@ static void Printf(NSString* fmt, ...)
 }
 
 
-- (void)queryDidUpdate:sender;
+- (void)queryDidUpdate:sender
 {
+    // We don't need this at present
 }
 
 
-- (void)queryComplete:sender;
+- (void)queryComplete:sender
 {
     // Stop the query, the single pass is completed.
     [_metadataQuery stopQuery];
