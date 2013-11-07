@@ -110,7 +110,6 @@ static void Printf(NSString* fmt, ...)
 }
 
 
-
 - (void)parseCommandLineArgv:(char * const *)argv argc:(int)argc
 {
     static struct option options[] = {
