@@ -395,8 +395,8 @@ static void Printf(NSString* fmt, ...)
 
     if (fileName)
     {
-        int minFileFieldWidth = tagsOnSeparateLines ? 0 : 31;
-        NSString* fileField = [self string:fileName paddedToMinimumLength:minFileFieldWidth];
+        BOOL padFileField = printTags && !tagsOnSeparateLines;
+        NSString* fileField = padFileField ? [self string:fileName paddedToMinimumLength:31] : fileName;
         Printf(@"%@", fileField);
     }
     
