@@ -493,6 +493,80 @@ static void Printf(NSString* fmt, ...)
 }
 
 
+- (void)enumerateDirectory:(NSURL*)directoryURL withBlock:(void (^)(NSURL *URL))block
+{
+    NSURL* baseURL = directoryURL;
+    
+    NSInteger enumerationOptions = 0;
+    if (!_displayAllFiles)
+        enumerationOptions |= NSDirectoryEnumerationSkipsHiddenFiles;
+    if (!_recurseDirectories)
+        enumerationOptions |= NSDirectoryEnumerationSkipsSubdirectoryDescendants;
+    
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    NSDirectoryEnumerator* enumerator = [fileManager enumeratorAtURL:baseURL
+                                          includingPropertiesForKeys:@[]
+                                                             options:enumerationOptions
+                                                        errorHandler:nil];
+    
+    NSString* baseURLString = [baseURL absoluteString];
+    for (NSObject* obj in enumerator)
+    {
+        @autoreleasepool {
+            NSURL* fullURL = (NSURL*)obj;
+            
+            // The directory enumerator returns full URLs, not partial URLs, which are what we really want.
+            // So remake the URL as a partial URL if possible
+            NSURL* URL = fullURL;
+            NSString* fullURLString = [fullURL absoluteString];
+            if ([fullURLString hasPrefix:baseURLString])
+            {
+                NSString* relativePart = [fullURLString substringFromIndex:[baseURLString length]];
+                URL = [NSURL URLWithString:relativePart relativeToURL:baseURL];
+            }
+            
+            block(URL);
+        }
+    }
+}
+
+
+- (void)enumerateURLsWithBlock:(void (^)(NSURL *URL))block
+{
+    if (!block)
+        return;
+    
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    
+    if ([self.URLs count] == 0)
+    {
+        // No URLs were provided on the command line, so enumerate the current directory
+        NSURL* currentDirectoryURL = [NSURL fileURLWithPath:[fileManager currentDirectoryPath]];
+        [self enumerateDirectory:currentDirectoryURL withBlock:block];
+    }
+    else
+    {
+        // Process URLs provided on the command line
+        for (NSURL* URL in self.URLs)
+        {
+            @autoreleasepool {
+                block(URL);
+                
+                // If we want to enter or recurse directories then do so,
+                // if we have a directory
+                if (_enterDirectories || _recurseDirectories)
+                {
+                    NSNumber* isDir = nil;
+                    [URL getResourceValue:&isDir forKey:NSURLIsDirectoryKey error:nil];
+                    if ([isDir boolValue])
+                        [self enumerateDirectory:URL withBlock:block];
+                }
+            }
+        }
+    }
+}
+
+
 - (void)doSet
 {
     NSArray* tagArray = [self tagArrayFromTagSet:self.tags];
@@ -567,77 +641,6 @@ static void Printf(NSString* fmt, ...)
             // Set the revised tags onto the item
             if (![URL setResourceValue:revisedTags forKey:NSURLTagNamesKey error:&error])
                 [self reportFatalError:error onURL:URL];
-        }
-    }
-}
-
-
-- (void)enumerateDirectory:(NSURL*)directoryURL withBlock:(void (^)(NSURL *URL))block
-{
-    NSURL* baseURL = directoryURL;
-    
-    NSInteger enumerationOptions = 0;
-    if (!_displayAllFiles)
-        enumerationOptions |= NSDirectoryEnumerationSkipsHiddenFiles;
-    if (!_recurseDirectories)
-        enumerationOptions |= NSDirectoryEnumerationSkipsSubdirectoryDescendants;
-    
-    NSFileManager* fileManager = [NSFileManager defaultManager];
-    NSDirectoryEnumerator* enumerator = [fileManager enumeratorAtURL:baseURL
-                                          includingPropertiesForKeys:@[]
-                                                             options:enumerationOptions
-                                                        errorHandler:nil];
-    
-    NSString* baseURLString = [baseURL absoluteString];
-    for (NSObject* obj in enumerator)
-    {
-        @autoreleasepool {
-            NSURL* fullURL = (NSURL*)obj;
-            
-            // The directory enumerator returns full URLs, not partial URLs, which are what we really want.
-            // So remake the URL as a partial URL if possible
-            NSURL* URL = fullURL;
-            NSString* fullURLString = [fullURL absoluteString];
-            if ([fullURLString hasPrefix:baseURLString])
-            {
-                NSString* relativePart = [fullURLString substringFromIndex:[baseURLString length]];
-                URL = [NSURL URLWithString:relativePart relativeToURL:baseURL];
-            }
-            
-            block(URL);
-        }
-    }
-}
-
-
-- (void)enumerateURLsWithBlock:(void (^)(NSURL *URL))block
-{
-    if (!block)
-        return;
-    
-    NSFileManager* fileManager = [NSFileManager defaultManager];
-    
-    if ([self.URLs count] == 0)
-    {
-        // No URLs were provided on the command line, so enumerate the current directory
-        NSURL* currentDirectoryURL = [NSURL fileURLWithPath:[fileManager currentDirectoryPath]];
-        [self enumerateDirectory:currentDirectoryURL withBlock:block];
-    }
-    else
-    {
-        for (NSURL* URL in self.URLs)
-        {
-            @autoreleasepool {
-                block(URL);
-                
-                if (_enterDirectories || _recurseDirectories)
-                {
-                    NSNumber* isDir = nil;
-                    [URL getResourceValue:&isDir forKey:NSURLIsDirectoryKey error:nil];
-                    if ([isDir boolValue])
-                        [self enumerateDirectory:URL withBlock:block];
-                }
-            }
         }
     }
 }

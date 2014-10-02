@@ -57,9 +57,9 @@ typedef NS_ENUM(int, SearchScope) {
 @property (assign, nonatomic) OutputFlags outputFlags;
 @property (assign, nonatomic) SearchScope searchScope;
 
-@property (assign, nonatomic) BOOL displayAllFiles;
-@property (assign, nonatomic) BOOL recurseDirectories;
-@property (assign, nonatomic) BOOL enterDirectories;
+@property (assign, nonatomic) BOOL displayAllFiles;     // Display all (hidden files)
+@property (assign, nonatomic) BOOL recurseDirectories;  // Enter/enumerate directories
+@property (assign, nonatomic) BOOL enterDirectories;    // Recursively process any directory we encounter
 
 @property (copy, nonatomic) NSSet* tags;
 @property (copy, nonatomic) NSArray* URLs;
