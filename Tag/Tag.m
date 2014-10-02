@@ -6,7 +6,7 @@
 //
 //  The MIT License (MIT)
 //
-//  Copyright (c) 2013 James Berry
+//  Copyright (c) 2013-2014 James Berry
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy of
 //  this software and associated documentation files (the "Software"), to deal in
@@ -36,6 +36,9 @@
     tag --list filename
  
     additional options:
+        --all                       While enumerating for list and match, evaluate hidden files/directories
+        --descend                   Recursively process directories (list and match)
+        --enter                     Enter directories (list and match)
         --name, --no-name           Override the display of filenames in output for the operation
         --tags, --no-tags           Override the display of tags in output for the operation
         --garrulous, --no-garrulous Override the garrulous formatting of tags (each on own line)
@@ -48,11 +51,19 @@
  */
 
 
+/*
+ TODO:
+ 
+    - Should the enumeration stuff currently applied to list and match also extend to add and remove?
+ 
+ */
+
+
 #import "Tag.h"
 #import "TagName.h"
 #import <getopt.h>
 
-NSString* const version = @"0.7.5";
+NSString* const version = @"0.8";
 
 NSString* const kMDItemUserTags = @"kMDItemUserTags";
 
@@ -122,6 +133,11 @@ static void Printf(NSString* fmt, ...)
         
         { "list",       no_argument,            0,              OperationModeList },
         
+        // Directory Enumeration Options
+        { "all",        no_argument,            0,              'A' },  // Display all (hidden files)
+        { "enter",      no_argument,            0,              'e' },  // Enter/enumerate directories: display contents of listed directories, not just the directory itself
+        { "descend",    no_argument,            0,              'd' },  // Recursively process any directory we encounter
+        
         // Format options
         { "name",       no_argument,            0,              'n' },
         { "no-name",    no_argument,            0,              'N' },
@@ -148,6 +164,10 @@ static void Printf(NSString* fmt, ...)
     self.outputFlags = 0;
     self.searchScope = SearchScopeLocal;
     
+    self.displayAllFiles = NO;
+    self.recurseDirectories = NO;
+    self.enterDirectories = NO;
+    
     self.tags = nil;
     self.URLs = nil;
     
@@ -159,7 +179,7 @@ static void Printf(NSString* fmt, ...)
     // Parse Options
     int option_char;
     int option_index;
-    while ((option_char = getopt_long(argc, argv, "s:a:r:m:f:lnNtTgG0hv", options, &option_index)) != -1)
+    while ((option_char = getopt_long(argc, argv, "s:a:r:m:f:lAednNtTgG0hv", options, &option_index)) != -1)
     {
         switch (option_char)
         {
@@ -182,6 +202,16 @@ static void Printf(NSString* fmt, ...)
                 
                 break;
             }
+                
+            case 'A':
+                _displayAllFiles = YES;
+                break;
+            case 'e':
+                _enterDirectories = YES;
+                break;
+            case 'd':
+                _recurseDirectories = YES;
+                break;
                 
             case 'n':
                 name_flag = 2;
@@ -319,6 +349,9 @@ static void Printf(NSString* fmt, ...)
            "    tag -f | --find <tags>              Find all files with tags\n"
            "  <tags> is a comma-separated list of tag names; use * to match/find any tag.\n"
            "  additional options:\n"
+           "        -A | --all          Display invisible files while enumerating\n"
+           "        -e | --enter        Enter/enumerate directories listed\n"
+           "        -d | --descend      Recursively descend into directories\n"
            "        -v | --version      Display version\n"
            "        -h | --help         Display this help\n"
            "        -n | --name         Turn on filename display in output (default)\n"
@@ -539,44 +572,108 @@ static void Printf(NSString* fmt, ...)
 }
 
 
+- (void)enumerateDirectory:(NSURL*)directoryURL withBlock:(void (^)(NSURL *URL))block
+{
+    NSURL* baseURL = directoryURL;
+    
+    NSInteger enumerationOptions = 0;
+    if (!_displayAllFiles)
+        enumerationOptions |= NSDirectoryEnumerationSkipsHiddenFiles;
+    if (!_recurseDirectories)
+        enumerationOptions |= NSDirectoryEnumerationSkipsSubdirectoryDescendants;
+    
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    NSDirectoryEnumerator* enumerator = [fileManager enumeratorAtURL:baseURL
+                                          includingPropertiesForKeys:@[]
+                                                             options:enumerationOptions
+                                                        errorHandler:nil];
+    
+    NSString* baseURLString = [baseURL absoluteString];
+    for (NSObject* obj in enumerator)
+    {
+        @autoreleasepool {
+            NSURL* fullURL = (NSURL*)obj;
+            
+            // The directory enumerator returns full URLs, not partial URLs, which are what we really want.
+            // So remake the URL as a partial URL if possible
+            NSURL* URL = fullURL;
+            NSString* fullURLString = [fullURL absoluteString];
+            if ([fullURLString hasPrefix:baseURLString])
+            {
+                NSString* relativePart = [fullURLString substringFromIndex:[baseURLString length]];
+                URL = [NSURL URLWithString:relativePart relativeToURL:baseURL];
+            }
+            
+            block(URL);
+        }
+    }
+}
+
+
+- (void)enumerateURLsWithBlock:(void (^)(NSURL *URL))block
+{
+    if (!block)
+        return;
+    
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    
+    if ([self.URLs count] == 0)
+    {
+        // No URLs were provided on the command line, so enumerate the current directory
+        NSURL* currentDirectoryURL = [NSURL fileURLWithPath:[fileManager currentDirectoryPath]];
+        [self enumerateDirectory:currentDirectoryURL withBlock:block];
+    }
+    else
+    {
+        for (NSURL* URL in self.URLs)
+        {
+            @autoreleasepool {
+                block(URL);
+                
+                if (_enterDirectories || _recurseDirectories)
+                {
+                    NSNumber* isDir = nil;
+                    [URL getResourceValue:&isDir forKey:NSURLIsDirectoryKey error:nil];
+                    if ([isDir boolValue])
+                        [self enumerateDirectory:URL withBlock:block];
+                }
+            }
+        }
+    }
+}
+
+
 - (void)doMatch
 {
     BOOL matchAny = [self wildcardInTagSet:self.tags];
 
-    // Display only those items containing all the tags listed
-    for (NSURL* URL in self.URLs)
-    {
-        @autoreleasepool {
-            NSError* error;
-            
-            // Get the tags on the URL
-            NSArray* tagArray;
-            if (![URL getResourceValue:&tagArray forKey:NSURLTagNamesKey error:&error])
-                [self reportFatalError:error onURL:URL];
-            
-            // If the set of existing tags contains all of the required
-            // tags then print the path
-            if ((matchAny && [tagArray count]) || [self.tags isSubsetOfSet:[self tagSetFromTagArray:tagArray]])
-                [self emitURL:URL tags:tagArray];
-        }
-    }
+    [self enumerateURLsWithBlock:^(NSURL *URL) {
+        NSError* error;
+        
+        // Get the tags on the URL
+        NSArray* tagArray;
+        if (![URL getResourceValue:&tagArray forKey:NSURLTagNamesKey error:&error])
+            [self reportFatalError:error onURL:URL];
+        
+        // If the set of existing tags contains all of the required
+        // tags then print the path
+        if ((matchAny && [tagArray count]) || [self.tags isSubsetOfSet:[self tagSetFromTagArray:tagArray]])
+            [self emitURL:URL tags:tagArray];
+    }];
 }
 
 
 - (void)doList
 {
     // List the tags for each item
-    for (NSURL* URL in self.URLs)
-    {
-        @autoreleasepool {
-            NSError* error;
-            NSArray* tagArray;
-            if (![URL getResourceValue:&tagArray forKey:NSURLTagNamesKey error:&error])
-                [self reportFatalError:error onURL:URL];
-            
-            [self emitURL:URL tags:tagArray];
-        }
-    }
+    [self enumerateURLsWithBlock:^(NSURL* URL){
+        NSError* error;
+        NSArray* tagArray;
+        if (![URL getResourceValue:&tagArray forKey:NSURLTagNamesKey error:&error])
+            [self reportFatalError:error onURL:URL];
+        
+        [self emitURL:URL tags:tagArray];
+    }];
 }
 
 
