@@ -36,9 +36,9 @@
     tag --list filename
  
     additional options:
-        --all                       While enumerating for list and match, evaluate hidden files/directories
-        --descend                   Recursively process directories (list and match)
-        --enter                     Enter directories (list and match)
+        --all                       While enumerating, evaluate hidden (as well as non-hidden) files/directories
+        --enter                     Enter directories
+        --descend                   Recursively process directories
         --name, --no-name           Override the display of filenames in output for the operation
         --tags, --no-tags           Override the display of tags in output for the operation
         --garrulous, --no-garrulous Override the garrulous formatting of tags (each on own line)
@@ -53,8 +53,6 @@
 
 /*
  TODO:
- 
-    - Should the enumeration stuff currently applied to list and match also extend to add and remove?
  
  */
 
@@ -135,7 +133,7 @@ static void Printf(NSString* fmt, ...)
         
         // Directory Enumeration Options
         { "all",        no_argument,            0,              'A' },  // Display all (hidden files)
-        { "enter",      no_argument,            0,              'e' },  // Enter/enumerate directories: display contents of listed directories, not just the directory itself
+        { "enter",      no_argument,            0,              'e' },  // Enter/enumerate directories: enumerate contents of provided directories
         { "descend",    no_argument,            0,              'd' },  // Recursively process any directory we encounter
         
         // Format options
@@ -350,7 +348,7 @@ static void Printf(NSString* fmt, ...)
            "  <tags> is a comma-separated list of tag names; use * to match/find any tag.\n"
            "  additional options:\n"
            "        -A | --all          Display invisible files while enumerating\n"
-           "        -e | --enter        Enter/enumerate directories listed\n"
+           "        -e | --enter        Enter/enumerate directories provided\n"
            "        -d | --descend      Recursively descend into directories\n"
            "        -v | --version      Display version\n"
            "        -h | --help         Display this help\n"
@@ -540,7 +538,7 @@ static void Printf(NSString* fmt, ...)
     
     if ([self.URLs count] == 0)
     {
-        // No URLs were provided on the command line, so enumerate the current directory
+        // No URLs were provided on the command line; enumerate the current directory
         NSURL* currentDirectoryURL = [NSURL fileURLWithPath:[fileManager currentDirectoryPath]];
         [self enumerateDirectory:currentDirectoryURL withBlock:block];
     }
@@ -552,7 +550,7 @@ static void Printf(NSString* fmt, ...)
             @autoreleasepool {
                 block(URL);
                 
-                // If we want to enter or recurse directories then do so,
+                // If we want to enter or recurse directories then do so
                 // if we have a directory
                 if (_enterDirectories || _recurseDirectories)
                 {
@@ -569,80 +567,96 @@ static void Printf(NSString* fmt, ...)
 
 - (void)doSet
 {
+    // Only perform set on specified URLs
+    // (we don't implicitly enumerate the current directory)
+    if ([self.URLs count] == 0)
+        return;
+    
+    // Enumerate the provided URLs, setting tags on each
+    // --all, --enter, and --descend apply
     NSArray* tagArray = [self tagArrayFromTagSet:self.tags];
-    for (NSURL* URL in self.URLs)
-    {
+    [self enumerateURLsWithBlock:^(NSURL *URL) {
         NSError* error;
         if (![URL setResourceValue:tagArray forKey:NSURLTagNamesKey error:&error])
             [self reportFatalError:error onURL:URL];
-    }
+    }];
 }
 
 
 - (void)doAdd
 {
+    // If there are no tags to add, we're done
     if (![self.tags count])
         return;
     
-    for (NSURL* URL in self.URLs)
-    {
-        @autoreleasepool {
-            NSError* error;
-            
-            // Get the existing tags
-            NSArray* existingTags;
-            if (![URL getResourceValue:&existingTags forKey:NSURLTagNamesKey error:&error])
-                [self reportFatalError:error onURL:URL];
-            
-            // Form the union of the existing tags + new tags.
-            NSMutableSet* tagSet = [self tagSetFromTagArray:existingTags];
-            [tagSet unionSet:self.tags];
-            
-            // Set all the new tags onto the item
-            if (![URL setResourceValue:[self tagArrayFromTagSet:tagSet] forKey:NSURLTagNamesKey error:&error])
-                [self reportFatalError:error onURL:URL];
-        }
-    }
+    // Only perform add on specified URLs
+    // (we don't implicitly enumerate the current directory)
+    if ([self.URLs count] == 0)
+        return;
+
+    // Enumerate the provided URLs, adding tags to each
+    // --all, --enter, and --descend apply
+    [self enumerateURLsWithBlock:^(NSURL *URL) {
+        NSError* error;
+        
+        // Get the existing tags
+        NSArray* existingTags;
+        if (![URL getResourceValue:&existingTags forKey:NSURLTagNamesKey error:&error])
+            [self reportFatalError:error onURL:URL];
+        
+        // Form the union of the existing tags + new tags.
+        NSMutableSet* tagSet = [self tagSetFromTagArray:existingTags];
+        [tagSet unionSet:self.tags];
+        
+        // Set all the new tags onto the item
+        if (![URL setResourceValue:[self tagArrayFromTagSet:tagSet] forKey:NSURLTagNamesKey error:&error])
+            [self reportFatalError:error onURL:URL];
+    }];
 }
 
 
 - (void)doRemove
 {
+    // If there are no tags to remove, we're done
     if (![self.tags count])
+        return;
+    
+    // Only perform remove on specified URLs
+    // (we don't implicitly enumerate the current directory)
+    if ([self.URLs count] == 0)
         return;
     
     BOOL matchAny = [self wildcardInTagSet:self.tags];
     
-    for (NSURL* URL in self.URLs)
-    {
-        @autoreleasepool {
-            NSError* error;
-            
-            // Get existing tags from the URL
-            NSArray* existingTags;
-            if (![URL getResourceValue:&existingTags forKey:NSURLTagNamesKey error:&error])
-                [self reportFatalError:error onURL:URL];
-            
-            // Form the revised array of tags
-            NSArray* revisedTags;
-            if (matchAny)
-            {
-                // We matched the wildcard, so remove all tags from the item
-                revisedTags = [[NSArray alloc] init];
-            }
-            else
-            {
-                // Existing tags minus tags to remove
-                NSMutableSet* tagSet = [self tagSetFromTagArray:existingTags];
-                [tagSet minusSet:self.tags];
-                revisedTags = [self tagArrayFromTagSet:tagSet];
-            }
-            
-            // Set the revised tags onto the item
-            if (![URL setResourceValue:revisedTags forKey:NSURLTagNamesKey error:&error])
-                [self reportFatalError:error onURL:URL];
+    // Enumerate the provided URLs, removing tags from each
+    // --all, --enter, and --descend apply
+    [self enumerateURLsWithBlock:^(NSURL *URL) {
+        NSError* error;
+        
+        // Get existing tags from the URL
+        NSArray* existingTags;
+        if (![URL getResourceValue:&existingTags forKey:NSURLTagNamesKey error:&error])
+            [self reportFatalError:error onURL:URL];
+        
+        // Form the revised array of tags
+        NSArray* revisedTags;
+        if (matchAny)
+        {
+            // We matched the wildcard, so remove all tags from the item
+            revisedTags = [[NSArray alloc] init];
         }
-    }
+        else
+        {
+            // Existing tags minus tags to remove
+            NSMutableSet* tagSet = [self tagSetFromTagArray:existingTags];
+            [tagSet minusSet:self.tags];
+            revisedTags = [self tagArrayFromTagSet:tagSet];
+        }
+        
+        // Set the revised tags onto the item
+        if (![URL setResourceValue:revisedTags forKey:NSURLTagNamesKey error:&error])
+            [self reportFatalError:error onURL:URL];
+    }];
 }
 
 
@@ -650,6 +664,8 @@ static void Printf(NSString* fmt, ...)
 {
     BOOL matchAny = [self wildcardInTagSet:self.tags];
 
+    // Enumerate the provided URLs or current directory, listing all paths that match the specified tags
+    // --all, --enter, and --descend apply
     [self enumerateURLsWithBlock:^(NSURL *URL) {
         NSError* error;
         
@@ -659,7 +675,7 @@ static void Printf(NSString* fmt, ...)
             [self reportFatalError:error onURL:URL];
         
         // If the set of existing tags contains all of the required
-        // tags then print the path
+        // tags then emit
         if ((matchAny && [tagArray count]) || [self.tags isSubsetOfSet:[self tagSetFromTagArray:tagArray]])
             [self emitURL:URL tags:tagArray];
     }];
@@ -668,13 +684,16 @@ static void Printf(NSString* fmt, ...)
 
 - (void)doList
 {
-    // List the tags for each item
-    [self enumerateURLsWithBlock:^(NSURL* URL){
+    // Enumerate the provided URLs or current directory, listing the tags for each path
+    // --all, --enter, and --descend apply
+    [self enumerateURLsWithBlock:^(NSURL* URL) {
+        // Get the tags
         NSError* error;
         NSArray* tagArray;
         if (![URL getResourceValue:&tagArray forKey:NSURLTagNamesKey error:&error])
             [self reportFatalError:error onURL:URL];
         
+        // Emit
         [self emitURL:URL tags:tagArray];
     }];
 }
