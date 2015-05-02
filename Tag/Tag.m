@@ -28,12 +28,12 @@
 
 
 /*
-    tag --set tagname,tagname filename...
-    tag --add tagname,tagname filename...
-    tag --remove tagname,tagname filename...
-    tag --match tagname,tagname filename...
-    tag --find tagname,tagname <filename...>
-    tag --list filename
+    tag --set <tags> <path>...
+    tag --add <tags> <path>...
+    tag --remove <tags> <path>...
+    tag --match <tags> <path>...
+    tag --find <tags> <path>...
+    tag --list <filename>...
  
     additional options:
         --all                       While enumerating, evaluate hidden (as well as non-hidden) files/directories
@@ -358,27 +358,27 @@ static void Printf(NSString* fmt, ...)
 {
     Printf(@"%@ - %@", [self programName], @"A tool for manipulating and querying file tags.\n"
            "  usage:\n"
-           "    tag -a | --add <tags> <file>...     Add tags to file\n"
-           "    tag -r | --remove <tags> <file>...  Remove tags from file\n"
-           "    tag -s | --set <tags> <file>...     Set tags on file\n"
-           "    tag -m | --match <tags> <file>...   Display files with matching tags\n"
-           "    tag -l | --list <file>...           List the tags on file\n"
-           "    tag -f | --find <tags>              Find all files with tags\n"
+           "    tag -a | --add <tags> <path>...     Add tags to file\n"
+           "    tag -r | --remove <tags> <path>...  Remove tags from file\n"
+           "    tag -s | --set <tags> <path>...     Set tags on file\n"
+           "    tag -m | --match <tags> <path>...   Display files with matching tags\n"
+           "    tag -l | --list <path>...           List the tags on file\n"
+           "    tag -f | --find <tags> <path>...    Find all files with tags (-A, -e, -d ignored)\n"
            "  <tags> is a comma-separated list of tag names; use * to match/find any tag.\n"
            "  additional options:\n"
+           "        -v | --version      Display version\n"
+           "        -h | --help         Display this help\n"
            "        -A | --all          Display invisible files while enumerating\n"
            "        -e | --enter        Enter/enumerate directories provided\n"
            "        -d | --descend      Recursively descend into directories\n"
-           "        -v | --version      Display version\n"
-           "        -h | --help         Display this help\n"
            "        -n | --name         Turn on filename display in output (default)\n"
            "        -N | --no-name      Turn off filename display in output (list, find, match)\n"
            "        -t | --tags         Turn on tags display in output (find, match)\n"
            "        -T | --no-tags      Turn off tags display in output (list)\n"
            "        -g | --garrulous    Display tags each on own line (list, find, match)\n"
            "        -G | --no-garrulous Display tags comma-separated after filename (default)\n"
-           "        -H | --home         Find tagged files only in user home directory\n"
-           "        -L | --local        Find tagged files only in home + local filesystems (default)\n"
+           "        -H | --home         Find tagged files in user home directory\n"
+           "        -L | --local        Find tagged files in home + local filesystems\n"
            "        -R | --network      Find tagged files in home + local + network filesystems\n"
            "        -0 | --nul          Terminate lines with NUL (\\0) for use with xargs -0\n"
     );
