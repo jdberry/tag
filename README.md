@@ -60,7 +60,7 @@ The *set* operation replaces all tags on the specified files with one or more ne
 
 ### Show files matching tags
 
-The *match* operation prints the file names that match the specified tags.  Matched files must have at least *all* of the tags specified. Note that *match* matches only against the files that are provided as parameters. To search for tagged files across your filesystem, see the *find* operation.
+The *match* operation prints the file names that match the specified tags.  Matched files must have at least *all* of the tags specified. Note that *match* matches only against the files that are provided as parameters (and those that it encounters if you use the --enter or --descend options). To search for tagged files across your filesystem, see the *find* operation.
 
 	tag --match tagname file
 	tag --match tagname1,tagname2,... file1 file2...
@@ -85,7 +85,7 @@ You may use short options as well. The following is equivalent to the previous c
 
 	tag -tgm '*' *
 
-You may use the --enter or --descend options to display the contents of, or recursively descend through, any directories provided. This is similar to the --find operation, but operates recursively. There may be differences in performance and/or output ordering in particular cases:
+You may use the --enter or --descend options to match the contents of, or recursively descend through, any directories provided. This is similar to the --find operation, but operates recursively from the directories you specify. There may be significant differences in performance and/or output ordering in particular cases, so neither *find* nor *match* will be the better solution for all cases.
 
     tag --match '*' --descend .
 
@@ -134,7 +134,7 @@ You can use the wildcard here too to find all files that contain a tag of any na
 
 	tag --find '*'
 	
-Use an empty tag expression here too to find all files that have _no_ tag:
+Or use an empty tag expression to find all files that have _no_ tag:
 
     tag --find ''
 
@@ -142,7 +142,7 @@ And of course you could turn on display of tag names, and even ask it to be garr
 
 	tag -tgf '*'
     
-*find* by default will search everywhere that it can. You may supply options to specify a search scope of the user home directory, local disks, or to include attached network file systems.
+*find* by default will search everywhere that it can. You may supply options to specify a search scope of the user home directory, local disks, or attached network file systems.
 
     tag --find tagname --home
     tag --find tagname --local
