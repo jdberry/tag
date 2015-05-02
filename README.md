@@ -85,6 +85,10 @@ You may use the --enter or --descend options to display the contents of, or recu
 
     tag --match \* --descend .
 
+If no file arguments are given, *match* will enumerate and match against the contents of the current directory:
+
+    tag --match tagname
+
 ### List the tags on a file
 
 This *list* operation lists the given files, displaying the tags on each:
@@ -96,7 +100,7 @@ This *list* operation lists the given files, displaying the tags on each:
 	
 	tag file1 file2...
 
-In fact, if no file arguments are given, *list* will display the contents of the current directory and any tags on those files:
+As with *match*, if no file arguments are given *list* will display the contents of the current directory and any tags on those files:
 
     tag
 	
