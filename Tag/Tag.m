@@ -64,10 +64,7 @@
         foo,bar OR baz
         foo,bar AND NOT biz,baz
         *               -- Some tag
-        NOT *           -- No tag?
-        ^               -- No tag?
-        -               -- No tag?
-        ""              -- No tag?
+        <empty expr>    -- No tag
         
         support glob patterns?
         support queries for both match and find?
@@ -80,7 +77,7 @@
 #import "TagName.h"
 #import <getopt.h>
 
-NSString* const version = @"0.8";
+NSString* const version = @"0.8.1";
 
 NSString* const kMDItemUserTags = @"kMDItemUserTags";
 
@@ -685,7 +682,8 @@ static void Printf(NSString* fmt, ...)
 - (void)doMatch
 {
     BOOL matchAny = [self wildcardInTagSet:self.tags];
-
+    BOOL matchNone = [self.tags count] == 0;
+    
     // Enumerate the provided URLs or current directory, listing all paths that match the specified tags
     // --all, --enter, and --descend apply
     [self enumerateURLsWithBlock:^(NSURL *URL) {
@@ -695,10 +693,14 @@ static void Printf(NSString* fmt, ...)
         NSArray* tagArray;
         if (![URL getResourceValue:&tagArray forKey:NSURLTagNamesKey error:&error])
             [self reportFatalError:error onURL:URL];
+        NSUInteger tagCount = [tagArray count];
         
         // If the set of existing tags contains all of the required
         // tags then emit
-        if ((matchAny && [tagArray count]) || [self.tags isSubsetOfSet:[self tagSetFromTagArray:tagArray]])
+        if (   (matchAny && tagCount > 0)
+            || (matchNone && tagCount == 0)
+            || (!matchNone && [self.tags isSubsetOfSet:[self tagSetFromTagArray:tagArray]])
+            )
             [self emitURL:URL tags:tagArray];
     }];
 }
@@ -723,10 +725,6 @@ static void Printf(NSString* fmt, ...)
 
 - (void)doFind
 {
-    // Don't do a search for no tags
-    if (![self.tags count])
-        return;
-    
     // Start a metadata search for files containing all of the given tags
     [self initiateMetadataSearchForTags:self.tags];
     
@@ -739,21 +737,23 @@ static void Printf(NSString* fmt, ...)
 
 - (NSPredicate*)formQueryPredicateForTags:(NSSet*)tagSet
 {
-    NSAssert([tagSet count], @"Assumes there are tags to query for");
-    
-    // Note for future: the following can be used to search for files that have
-    // no tags: [NSPredicate predicateWithFormat:@"NOT %K LIKE '*'", kMDItemUserTags]
-    
+    BOOL matchAny = [self wildcardInTagSet:tagSet];
+    BOOL matchNone = [tagSet count] == 0;
+
     NSPredicate* result;
-    if ([self wildcardInTagSet:tagSet])
+    if (matchAny)
     {
         result = [NSPredicate predicateWithFormat:@"%K LIKE '*'", kMDItemUserTags];
+    }
+    else if (matchNone)
+    {
+        result = [NSPredicate predicateWithFormat:@"NOT %K LIKE '*'", kMDItemUserTags];
     }
     else if ([tagSet count] == 1)
     {
         result = [NSPredicate predicateWithFormat:@"%K ==[c] %@", kMDItemUserTags, ((TagName*)tagSet.anyObject).visibleName];
     }
-    else
+    else // if tagSet count > 0
     {
         NSMutableArray* subpredicates = [NSMutableArray new];
         for (TagName* tag in tagSet)

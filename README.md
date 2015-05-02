@@ -67,23 +67,27 @@ The *match* operation prints the file names that match the specified tags.  Matc
 	
 You can use a wildcard (*) character in the tags list to match against any/all tags. Note, however, that you'll need to quote that * against shell expansion. To display all files in the current directory that have any combination of tags (but not _no_ tags), use:
 
-	tag --match \* *
+	tag --match '*' *
+
+Conversely, to match against paths that have _no_ tags, use an empty tag expression:
+
+    tag --match '' *
 	
 Turn on --tags display mode for this operation to additionally show the tags on the file:
 
-	tag --match \* --tags *
+	tag --match '*' --tags *
 
 Turn on garrulous output to format those tags onto multiple lines:
 
-	tag --match \* --tags --garrulous *
+	tag --match '*' --tags --garrulous *
 
 You may use short options as well. The following is equivalent to the previous command:
 
-	tag -tgm \* *
+	tag -tgm '*' *
 
 You may use the --enter or --descend options to display the contents of, or recursively descend through, any directories provided. This is similar to the --find operation, but operates recursively. There may be differences in performance and/or output ordering in particular cases:
 
-    tag --match \* --descend .
+    tag --match '*' --descend .
 
 If no file arguments are given, *match* will enumerate and match against the contents of the current directory:
 
@@ -128,11 +132,15 @@ The *find* operation searches across your filesystem for all files that contain 
 	
 You can use the wildcard here too to find all files that contain a tag of any name:
 
-	tag --find \*
+	tag --find '*'
 	
+Use an empty tag expression here too to find all files that have _no_ tag:
+
+    tag --find ''
+
 And of course you could turn on display of tag names, and even ask it to be garrulous, which displays all files on your system with tags, listing the tags independently on lines below the file names.
 
-	tag -tgf \*
+	tag -tgf '*'
     
 *find* by default will search everywhere that it can. You may supply options to specify a search scope of the user home directory, local disks, or to include attached network file systems.
 
@@ -184,6 +192,7 @@ Advanced Usage
 ----
 * Wherever a "tagname" is expected, a list of tags may be provided. They must be comma-separated.
 * Tagnames may include spaces, but the entire tag list must be provided as one parameter: "tag1,a multiword tag name,tag3".
+* For *match* and *find*, a tag name of '*' is the wildcard and will match any tag. An empty tag expression '' will match only files with no tags.
 * Wherever a "file" is expected, a list of files may be used instead. These are provided as separate parameters.
 * Note that directories can be tagged as well, so directories may be specified instead of files.
 * The --all, --enter, and --descend options apply to --add, --remove, --set, --match, and --list, and control whether hidden files are processed and whether directories are entered and/or processed recursively. If a directory is supplied, but neither of --enter or --descend, then the operation will apply to the directory itself, rather than to its contents.
@@ -199,6 +208,6 @@ The following features are contemplated for future enhancement:
 
 * A man page
 * Regex or glob matching of tags
-* The ability to match or find for "<no tags>"
 * More complicated boolean matching criteria
+
 
