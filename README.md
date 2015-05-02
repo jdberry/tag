@@ -81,7 +81,7 @@ You may use short options as well. The following is equivalent to the previous c
 
 	tag -tgm \* *
 
-You may use the --enter or --descend options to display the contents of, or recursively descend through, any directories provided. This is similar to the --find operation, but operates recursively: there may be differences in performance and/or output ordering in particular cases:
+You may use the --enter or --descend options to display the contents of, or recursively descend through, any directories provided. This is similar to the --find operation, but operates recursively. There may be differences in performance and/or output ordering in particular cases:
 
     tag --match \* --descend .
 
@@ -96,7 +96,7 @@ This *list* operation lists the given files, displaying the tags on each:
 	
 	tag file1 file2...
 
-In fact, if no file arguments are given, *list* will display the contents of the current directory:
+In fact, if no file arguments are given, *list* will display the contents of the current directory and any tags on those files:
 
     tag
 	
@@ -109,6 +109,11 @@ If you just want to see tags, but not filenames, turn off display of files:
 	tag --no-name *
 
 You may use the --enter or --descend options to list the contents of, or recursively descend through, any directories provided:
+
+    tag --list --enter .
+    tag --list --descend .
+    tag -d .
+
 	
 ### Find all files on the filesystem with specified tags
 
@@ -189,3 +194,7 @@ Omissions
 The following features are contemplated for future enhancement:
 
 * A man page
+* Regex or glob matching of tags
+* The ability to match or find for "<no tags>"
+* More complicated boolean matching criteria
+
