@@ -264,10 +264,12 @@ static void Printf(NSString* fmt, ...)
                 break;
 
             case 'h':
+                _operationMode = OperationModeNone;
                 [self displayHelp];
                 break;
                 
             case 'v':
+                _operationMode = OperationModeNone;
                 [self displayVersion];
                 break;
                 
@@ -411,6 +413,7 @@ static void Printf(NSString* fmt, ...)
             [self doList];
             break;
             
+        case OperationModeNone:
         case OperationModeUnknown:
             break;
     }

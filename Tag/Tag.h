@@ -29,6 +29,7 @@
 #import <Foundation/Foundation.h>
 
 typedef NS_ENUM(int, OperationMode) {
+    OperationModeNone       = -1,
     OperationModeUnknown    = 0,
     OperationModeSet        = 's',
     OperationModeAdd        = 'a',
