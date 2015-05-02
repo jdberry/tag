@@ -54,6 +54,23 @@
 /*
  TODO:
  
+    Potential simple tag query:
+ 
+        foo OR bar
+        foo,bar         -- comma same as AND
+        foo AND bar
+        NOT foo
+        foo,bar AND baz
+        foo,bar OR baz
+        foo,bar AND NOT biz,baz
+        *               -- Some tag
+        NOT *           -- No tag?
+        ""              -- No tag?
+        
+        support glob patterns?
+        support queries for both match and find?
+ 
+        Use NSPredicate for both find and match?
  */
 
 
