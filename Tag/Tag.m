@@ -33,12 +33,12 @@
     tag --remove <tags> <path>...
     tag --match <tags> <path>...
     tag --find <tags> <path>...
-    tag --list <filename>...
+    tag --list <path>...
  
     additional options:
         --all                       While enumerating, evaluate hidden (as well as non-hidden) files/directories
-        --enter                     Enter directories
-        --descend                   Recursively process directories
+        --enter                     Enter and enumerate directories provided
+        --descend                   Recursively enumerate directories provided
         --name, --no-name           Override the display of filenames in output for the operation
         --tags, --no-tags           Override the display of tags in output for the operation
         --garrulous, --no-garrulous Override the garrulous formatting of tags (each on own line)
@@ -65,6 +65,8 @@
         foo,bar AND NOT biz,baz
         *               -- Some tag
         NOT *           -- No tag?
+        ^               -- No tag?
+        -               -- No tag?
         ""              -- No tag?
         
         support glob patterns?
@@ -369,7 +371,7 @@ static void Printf(NSString* fmt, ...)
            "        -v | --version      Display version\n"
            "        -h | --help         Display this help\n"
            "        -A | --all          Display invisible files while enumerating\n"
-           "        -e | --enter        Enter/enumerate directories provided\n"
+           "        -e | --enter        Enter and enumerate directories provided\n"
            "        -d | --descend      Recursively descend into directories\n"
            "        -n | --name         Turn on filename display in output (default)\n"
            "        -N | --no-name      Turn off filename display in output (list, find, match)\n"

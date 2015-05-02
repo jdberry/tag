@@ -1,6 +1,6 @@
 tag
 ===
-**tag** is a command line tool to manipulate tags on Mac OS X 10.9 Mavericks files, and to query for files with those tags. **tag** can use the file system's built-in metadata search functionality to rapidly find all files that have been tagged with a given set of tags.
+**tag** is a command line tool to manipulate tags on Mac OS X files (10.9 Mavericks and above), and to query for files with those tags. **tag** can use the file system's built-in metadata search functionality to rapidly find all files that have been tagged with a given set of tags.
 
 Usage
 ---
@@ -9,24 +9,27 @@ Usage
 
 	tag - A tool for manipulating and querying file tags.
 	  usage:
-		tag -a | --add <tags> <file>...     Add tags to file
-		tag -r | --remove <tags> <file>...  Remove tags from file
-		tag -s | --set <tags> <file>...     Set tags on file
-		tag -m | --match <tags> <file>...   Display files with matching tags
-		tag -l | --list <file>...           List the tags on file
-		tag -f | --find <tags>              Find all files with tags
+		tag -a | --add <tags> <path>...     Add tags to file
+		tag -r | --remove <tags> <path>...  Remove tags from file
+		tag -s | --set <tags> <path>...     Set tags on file
+		tag -m | --match <tags> <path>...   Display files with matching tags
+		tag -l | --list <path>...           List the tags on file
+		tag -f | --find <tags> <path>...    Find all files with tags, limited to paths if present
 	  <tags> is a comma-separated list of tag names; use * to match/find any tag.
 	  additional options:
 			-v | --version      Display version
 			-h | --help         Display this help
+			-A | --all          Display invisible files while enumerating
+			-e | --enter        Enter/enumerate directories provided
+			-d | --descend      Recursively descend into directories
 			-n | --name         Turn on filename display in output (default)
 			-N | --no-name      Turn off filename display in output (list, find, match)
 			-t | --tags         Turn on tags display in output (find, match)
 			-T | --no-tags      Turn off tags display in output (list)
 			-g | --garrulous    Display tags each on own line (list, find, match)
 			-G | --no-garrulous Display tags comma-separated after filename (default)
-			-H | --home         Find tagged files only in user home directory
-			-L | --local        Find tagged files only in home + local filesystems (default)
+			-H | --home         Find tagged files in user home directory
+			-L | --local        Find tagged files in home + local filesystems
 			-R | --network      Find tagged files in home + local + network filesystems
 			-0 | --nul          Terminate lines with NUL (\0) for use with xargs -0
 
@@ -78,9 +81,13 @@ You may use short options as well. The following is equivalent to the previous c
 
 	tag -tgm \* *
 
+You may use the --enter or --descend options to display the contents of, or recursively descend through, any directories provided. This is similar to the --find operation, but operates recursively: there may be differences in performance and/or output ordering in particular cases:
+
+    tag --match \* --descend .
+
 ### List the tags on a file
 
-This *list* operation lists all the tags for each file specified.
+This *list* operation lists the given files, displaying the tags on each:
 	
 	tag --list file
 	tag --list file1 file2...
@@ -88,6 +95,10 @@ This *list* operation lists all the tags for each file specified.
 *list* is the default operation, so you may omit the list option:
 	
 	tag file1 file2...
+
+In fact, if no file arguments are given, *list* will display the contents of the current directory:
+
+    tag
 	
 You can turn on garrulous mode for *list* as well:
 
@@ -96,6 +107,8 @@ You can turn on garrulous mode for *list* as well:
 If you just want to see tags, but not filenames, turn off display of files:
 
 	tag --no-name *
+
+You may use the --enter or --descend options to list the contents of, or recursively descend through, any directories provided:
 	
 ### Find all files on the filesystem with specified tags
 
@@ -112,13 +125,16 @@ And of course you could turn on display of tag names, and even ask it to be garr
 
 	tag -tgf \*
     
-*find* will by default find files within the user home directory + the local filesystem: the local scope. You may limit the scope to find only within the user home directory, or expand it to include mounted network filesystems.
+*find* by default will search everywhere that it can. You may supply options to specify a search scope of the user home directory, local disks, or to include attached network file systems.
 
     tag --find tagname --home
     tag --find tagname --local
     tag --find tagname --network
+
+You may also supply one or more paths in which to search. 
     
-Search scopes are additive; searching in network will also search local and home, etc.
+    tag --find tagname /path/to/here
+    tag --find tagname --home /path/to/here ./there
 
 ### Get help
 
@@ -157,14 +173,14 @@ This will install **tag** at /usr/local/bin/tag
 
 Advanced Usage
 ----
-Hints:
-
 * Wherever a "tagname" is expected, a list of tags may be provided. They must be comma-separated.
-* Tagnames may include spaces, but the entire tag list must be provided as one parameter: "a multiword tag name".
+* Tagnames may include spaces, but the entire tag list must be provided as one parameter: "tag1,a multiword tag name,tag3".
 * Wherever a "file" is expected, a list of files may be used instead. These are provided as separate parameters.
 * Note that directories can be tagged as well, so directories may be specified instead of files.
+* The --all, --enter, and --descend options apply to --add, --remove, --set, --match, and --list, and control whether hidden files are processed and whether directories are entered and/or processed recursively. If a directory is supplied, but neither of --enter or --descend, then the operation will apply to the directory itself, rather than to its contents.
 * The operation selector --add, --remove, --set, --match, --list, or --find may be abbreviated as -a, -r, -s, -m, -l, or -f, respectively. All of the options have a short version, in fact. See see the synopsis above, or output from help.
 * If no operation selector is given, the operation will default to *list*.
+* A *list* operation will default to the current directory if no directory is given.
 * For compatibility with Finder, tags are compared in a case-insensitive manner.
 * If you plan to pipe the output of **tag** through **xargs**, you might want to use the -0 option of each.
 
