@@ -32,7 +32,7 @@
     tag --add tagname,tagname filename...
     tag --remove tagname,tagname filename...
     tag --match tagname,tagname filename...
-    tag --find tagname,tagname
+    tag --find tagname,tagname <filename...>
     tag --list filename
  
     additional options:
@@ -177,7 +177,7 @@ static void Printf(NSString* fmt, ...)
     // Initialize to a known state
     self.operationMode = OperationModeUnknown;
     self.outputFlags = 0;
-    self.searchScope = SearchScopeLocal;
+    self.searchScope = SearchScopeNone;
     
     self.displayAllFiles = NO;
     self.recurseDirectories = NO;
@@ -765,19 +765,30 @@ static void Printf(NSString* fmt, ...)
 
 - (NSArray*)searchScopesFromSearchScope:(SearchScope)scope
 {
-    NSArray* result;
+    NSMutableArray* result = [[NSMutableArray alloc] init];
+
+    // Add URLs in which to explicitly search
+    if ([self.URLs count])
+        [result addObjectsFromArray:self.URLs];
+    
+    // Add any specified search scopes
     switch (scope)
     {
+        case SearchScopeNone:
+            break;
         case SearchScopeHome:
-            result = @[NSMetadataQueryUserHomeScope];
+            [result addObject:NSMetadataQueryUserHomeScope];
             break;
         case SearchScopeLocal:
-            result = @[NSMetadataQueryLocalComputerScope];
+            [result addObject:NSMetadataQueryLocalComputerScope];
             break;
         case SearchScopeNetwork:
-            result = @[NSMetadataQueryLocalComputerScope,NSMetadataQueryNetworkScope];
+            [result addObjectsFromArray:@[NSMetadataQueryLocalComputerScope,NSMetadataQueryNetworkScope]];
             break;
     }
+    
+    // In the absence of any scope, the search is not scoped
+    
     return result;
 }
 

@@ -47,7 +47,8 @@ typedef NS_OPTIONS(int, OutputFlags) {
 };
 
 typedef NS_ENUM(int, SearchScope) {
-    SearchScopeHome         = 0,
+    SearchScopeNone         = 0,
+    SearchScopeHome,
     SearchScopeLocal,
     SearchScopeNetwork,
 };
