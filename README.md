@@ -121,6 +121,10 @@ You may use the --enter or --descend options to list the contents of, or recursi
     tag --list --enter .
     tag --list --descend .
     tag -d .
+    
+To get a list of all tags in the current directory you can combine `tag` with `cut` (to split multiple tags from one file to a seperate line), `sort`, and `uniq` (which removes duplicate entries):
+
+    tag --no-name * | cut -d',' -f1 | sort | uniq
 
 	
 ### Find all files on the filesystem with specified tags
