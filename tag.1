@@ -1,0 +1,83 @@
+.TH "TAG" "7" "November 2015" "Tag" "tag"
+.
+.SH "NAME"
+\fBtag\fR \- A tool for manipulating and querying file tags.
+.
+.SH "SYNOPSIS"
+\fBtag\fR [options] [command] [<tags> <path>] \.\.\.
+.
+.SH "COMMANDS"
+.TP
+.BR \-a ", " \-\-add \fI<tags>\fR\fI<path>\fR
+Add tags to file
+.TP
+.BR \-r ", " \-\-remove\fI<tags>\fR\fI<path>\fR
+Remove tags from file
+.TP
+.BR \-s ", " \-\-set\fI<tags>\fR\fI<path>\fR
+Set tags on file
+.TP
+.BR \-m ", " \-\-match\fI<tags>\fR\fI<path>\fR
+Display files with matching tags
+.TP
+.BR \-l ", " \-\-list\fI<tags>\fR\fI<path>\fR
+List the tags on file
+.TP
+.BR \-f ", " \-\-find\fI<tags>\fR\fI<path>\fR
+Find all files with tags (-A, -e, -d ignored)
+
+.SH "DESCRIPTION"
+.
+<tags> is a comma-separated list of tag names; use * to match/find any tag.
+.SH "OPTIONS"
+. Additional options:
+.TP
+.BR \-v ", " \-\-version
+Display version
+.TP
+.BR \-h ", " \-\-help
+Display this help
+.TP
+.BR \-A ", " \-\-all
+Display invisible files while enumerating
+.TP
+.BR \-e ", " \-\-enter
+Enter and enumerate directories provided
+.TP
+.BR \-d ", " \-\-descend
+Recursively descend into directories
+.TP
+.BR \-n ", " \-\-name
+Turn on filename display in output (default)
+.TP
+.BR \-N ", " \-\-no-name
+Turn off filename display in output (list, find, match)
+.TP
+.BR \-t ", " \-\-tags
+Turn on tags display in output (find, match)
+.TP
+.BR \-T ", " \-\-no-tags
+Turn off tags display in output (list)
+.TP
+.BR \-g ", " \-\-garrulous
+Display tags each on own line (list, find, match)
+.TP
+.BR \-G ", " \-\-no-garrulous
+Display tags comma-separated after filename (default)
+.TP
+.BR \-H ", " \-\-home
+Find tagged files in user home directory
+.TP
+.BR \-L ", " \-\-local
+Find tagged files in home + local filesystems
+.TP
+.BR \-R ", " \-\-network
+Find tagged files in home + local + network filesystems
+.TP
+.BR \-0 ", " \-\-null
+Terminate lines with NUL (\0) for use with xargs -0
+.
+.SH BUGS
+Report on https://github.com/jdberry/tag/issues
+.SH AUTHOR
+James Berry
