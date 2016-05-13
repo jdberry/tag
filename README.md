@@ -206,7 +206,6 @@ Omissions
 ---
 The following features are contemplated for future enhancement:
 
-* A man page
 * Regex or glob matching of tags
 * More complicated boolean matching criteria
 
