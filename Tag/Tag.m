@@ -38,7 +38,7 @@
     additional options:
         --all                       While enumerating, evaluate hidden (as well as non-hidden) files/directories
         --enter                     Enter and enumerate directories provided
-        --descend                   Recursively enumerate directories provided
+        --recursive                 Recursively enumerate directories provided
         --name, --no-name           Override the display of filenames in output for the operation
         --tags, --no-tags           Override the display of tags in output for the operation
         --garrulous, --no-garrulous Override the garrulous formatting of tags (each on own line)
@@ -54,7 +54,7 @@
 /*
  TODO:
  
-    Potential simple tag query:
+    Potential simple boolean tag query:
  
         foo OR bar
         foo,bar         -- comma same as AND
@@ -79,6 +79,7 @@
 
 NSString* const version = @"0.8.1";
 
+// This constant doesn't seem to be defined in MDItem.h, so we define it here
 NSString* const kMDItemUserTags = @"kMDItemUserTags";
 
 
@@ -133,6 +134,13 @@ static void Printf(NSString* fmt, ...)
     }
     return result;
 }
+    
+    
+typedef NS_ENUM(int, CommandCode) {
+    CommandCodeHome     = 1000,
+    CommandCodeLocal,
+    CommandCodeNetwork
+};
 
 
 - (void)parseCommandLineArgv:(char * const *)argv argc:(int)argc
@@ -150,7 +158,8 @@ static void Printf(NSString* fmt, ...)
         // Directory Enumeration Options
         { "all",        no_argument,            0,              'A' },  // Display all (hidden files)
         { "enter",      no_argument,            0,              'e' },  // Enter/enumerate directories: enumerate contents of provided directories
-        { "descend",    no_argument,            0,              'd' },  // Recursively process any directory we encounter
+        { "recursive",  no_argument,            0,              'R' },  // Recursively process any directory we encounter
+        { "descend",    no_argument,            0,              'd' },  // Recursively process any directory we encounter (alias for backwards compatibility)
         
         // Format options
         { "name",       no_argument,            0,              'n' },
@@ -162,9 +171,9 @@ static void Printf(NSString* fmt, ...)
         { "nul",        no_argument,            0,              '0' },
         
         // Search Scope
-        { "home",       no_argument,            0,              'H' },
-        { "local",      no_argument,            0,              'L' },
-        { "network",    no_argument,            0,              'R' },
+        { "home",       no_argument,            0,              CommandCodeHome },
+        { "local",      no_argument,            0,              CommandCodeLocal },
+        { "network",    no_argument,            0,              CommandCodeNetwork },
 
         // other
         { "help",       no_argument,            0,              'h' },
@@ -193,7 +202,7 @@ static void Printf(NSString* fmt, ...)
     // Parse Options
     int option_char;
     int option_index;
-    while ((option_char = getopt_long(argc, argv, "s:a:r:m:f:lAednNtTgG0hv", options, &option_index)) != -1)
+    while ((option_char = getopt_long(argc, argv, "s:a:r:m:f:lAeRdnNtTgG0hv", options, &option_index)) != -1)
     {
         switch (option_char)
         {
@@ -223,7 +232,8 @@ static void Printf(NSString* fmt, ...)
             case 'e':
                 _enterDirectories = YES;
                 break;
-            case 'd':
+            case 'R':
+            case 'd':       // -d is a backward compatibility alias for -R
                 _recurseDirectories = YES;
                 break;
                 
@@ -248,13 +258,13 @@ static void Printf(NSString* fmt, ...)
                 garrulous_flag = 1;
                 break;
                 
-            case 'H':
+            case CommandCodeHome:
                 _searchScope = SearchScopeHome;
                 break;
-            case 'L':
+            case CommandCodeLocal:
                 _searchScope = SearchScopeLocal;
                 break;
-            case 'R':
+            case CommandCodeNetwork:
                 _searchScope = SearchScopeNetwork;
                 break;
                 
@@ -369,7 +379,7 @@ static void Printf(NSString* fmt, ...)
            "        -h | --help         Display this help\n"
            "        -A | --all          Display invisible files while enumerating\n"
            "        -e | --enter        Enter and enumerate directories provided\n"
-           "        -d | --descend      Recursively descend into directories\n"
+           "        -R | --recursive    Recursively process directories\n"
            "        -n | --name         Turn on filename display in output (default)\n"
            "        -N | --no-name      Turn off filename display in output (list, find, match)\n"
            "        -t | --tags         Turn on tags display in output (find, match)\n"
@@ -567,6 +577,7 @@ static void Printf(NSString* fmt, ...)
         for (NSURL* URL in self.URLs)
         {
             @autoreleasepool {
+                // Invoke the block
                 block(URL);
                 
                 // If we want to enter or recurse directories then do so
@@ -592,7 +603,7 @@ static void Printf(NSString* fmt, ...)
         return;
     
     // Enumerate the provided URLs, setting tags on each
-    // --all, --enter, and --descend apply
+    // --all, --enter, and --recursive apply
     NSArray* tagArray = [self tagArrayFromTagSet:self.tags];
     [self enumerateURLsWithBlock:^(NSURL *URL) {
         NSError* error;
@@ -614,7 +625,7 @@ static void Printf(NSString* fmt, ...)
         return;
 
     // Enumerate the provided URLs, adding tags to each
-    // --all, --enter, and --descend apply
+    // --all, --enter, and --recursive apply
     [self enumerateURLsWithBlock:^(NSURL *URL) {
         NSError* error;
         
@@ -648,7 +659,7 @@ static void Printf(NSString* fmt, ...)
     BOOL matchAny = [self wildcardInTagSet:self.tags];
     
     // Enumerate the provided URLs, removing tags from each
-    // --all, --enter, and --descend apply
+    // --all, --enter, and --recursive apply
     [self enumerateURLsWithBlock:^(NSURL *URL) {
         NSError* error;
         
@@ -685,7 +696,7 @@ static void Printf(NSString* fmt, ...)
     BOOL matchNone = [self.tags count] == 0;
     
     // Enumerate the provided URLs or current directory, listing all paths that match the specified tags
-    // --all, --enter, and --descend apply
+    // --all, --enter, and --recursive apply
     [self enumerateURLsWithBlock:^(NSURL *URL) {
         NSError* error;
         
@@ -709,7 +720,7 @@ static void Printf(NSString* fmt, ...)
 - (void)doList
 {
     // Enumerate the provided URLs or current directory, listing the tags for each path
-    // --all, --enter, and --descend apply
+    // --all, --enter, and --recursive apply
     [self enumerateURLsWithBlock:^(NSURL* URL) {
         // Get the tags
         NSError* error;
