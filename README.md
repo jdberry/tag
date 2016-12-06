@@ -21,16 +21,16 @@ Usage
 			-h | --help         Display this help
 			-A | --all          Display invisible files while enumerating
 			-e | --enter        Enter/enumerate directories provided
-			-d | --descend      Recursively descend into directories
+			-R | --recursive    Recursively process directories
 			-n | --name         Turn on filename display in output (default)
 			-N | --no-name      Turn off filename display in output (list, find, match)
 			-t | --tags         Turn on tags display in output (find, match)
 			-T | --no-tags      Turn off tags display in output (list)
 			-g | --garrulous    Display tags each on own line (list, find, match)
 			-G | --no-garrulous Display tags comma-separated after filename (default)
-			-H | --home         Find tagged files in user home directory
-			-L | --local        Find tagged files in home + local filesystems
-			-R | --network      Find tagged files in home + local + network filesystems
+			     --home         Find tagged files in user home directory
+                 --local        Find tagged files in home + local filesystems
+			     --network      Find tagged files in home + local + network filesystems
 			-0 | --nul          Terminate lines with NUL (\0) for use with xargs -0
 
 ### Add tags to a file
@@ -60,7 +60,7 @@ The *set* operation replaces all tags on the specified files with one or more ne
 
 ### Show files matching tags
 
-The *match* operation prints the file names that match the specified tags.  Matched files must have at least *all* of the tags specified. Note that *match* matches only against the files that are provided as parameters (and those that it encounters if you use the --enter or --descend options). To search for tagged files across your filesystem, see the *find* operation.
+The *match* operation prints the file names that match the specified tags.  Matched files must have at least *all* of the tags specified. Note that *match* matches only against the files that are provided as parameters (and those that it encounters if you use the --enter or --recursive options). To search for tagged files across your filesystem, see the *find* operation.
 
 	tag --match tagname file
 	tag --match tagname1,tagname2,... file1 file2...
@@ -85,9 +85,9 @@ You may use short options as well. The following is equivalent to the previous c
 
 	tag -tgm '*' *
 
-You may use the --enter or --descend options to match the contents of, or recursively descend through, any directories provided. This is similar to the --find operation, but operates recursively from the directories you specify. There may be significant differences in performance and/or output ordering in particular cases, so neither *find* nor *match* will be the better solution for all cases.
+You may use the --enter or --recursive options to match the contents of, or recursively process, any directories provided. This is similar to the --find operation, but operates recursively from the directories you specify. There may be significant differences in performance and/or output ordering in particular cases, so neither *find* nor *match* will be the better solution for all cases.
 
-    tag --match '*' --descend .
+    tag --match '*' --recursive .
 
 If no file arguments are given, *match* will enumerate and match against the contents of the current directory:
 
@@ -116,11 +116,11 @@ If you just want to see tags, but not filenames, turn off display of files:
 
 	tag --no-name *
 
-You may use the --enter or --descend options to list the contents of, or recursively descend through, any directories provided:
+You may use the --enter or --recursive options to list the contents of, or recursively process, any directories provided:
 
     tag --list --enter .
-    tag --list --descend .
-    tag -d .
+    tag --list --recursive .
+    tag -R .
 
 	
 ### Find all files on the filesystem with specified tags
@@ -186,7 +186,7 @@ To build and install onto your system:
 
 	make && sudo make install
 	
-This will install **tag** at /usr/local/bin/tag
+This will install **tag** at /usr/local/bin/tag and the man page at /usr/local/share/man/man1/tag.1
 
 Advanced Usage
 ----
@@ -195,12 +195,13 @@ Advanced Usage
 * For *match* and *find*, a tag name of '*' is the wildcard and will match any tag. An empty tag expression '' will match only files with no tags.
 * Wherever a "file" is expected, a list of files may be used instead. These are provided as separate parameters.
 * Note that directories can be tagged as well, so directories may be specified instead of files.
-* The --all, --enter, and --descend options apply to --add, --remove, --set, --match, and --list, and control whether hidden files are processed and whether directories are entered and/or processed recursively. If a directory is supplied, but neither of --enter or --descend, then the operation will apply to the directory itself, rather than to its contents.
+* The --all, --enter, and --recursive options apply to --add, --remove, --set, --match, and --list, and control whether hidden files are processed and whether directories are entered and/or processed recursively. If a directory is supplied, but neither of --enter or --recursive, then the operation will apply to the directory itself, rather than to its contents.
 * The operation selector --add, --remove, --set, --match, --list, or --find may be abbreviated as -a, -r, -s, -m, -l, or -f, respectively. All of the options have a short version, in fact. See see the synopsis above, or output from help.
 * If no operation selector is given, the operation will default to *list*.
 * A *list* operation will default to the current directory if no directory is given.
 * For compatibility with Finder, tags are compared in a case-insensitive manner.
 * If you plan to pipe the output of **tag** through **xargs**, you might want to use the -0 option of each.
+* For compatibility with versions 0.8.1 and earlier, -d/--descend is an alias for -R/--recursive.
 
 Omissions
 ---
