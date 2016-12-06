@@ -192,7 +192,7 @@ Advanced Usage
 ----
 * Wherever a "tagname" is expected, a list of tags may be provided. They must be comma-separated.
 * Tagnames may include spaces, but the entire tag list must be provided as one parameter: "tag1,a multiword tag name,tag3".
-* For *match* and *find*, a tag name of '*' is the wildcard and will match any tag. An empty tag expression '' will match only files with no tags.
+* For *match*, *find*, and *remove*, a tag name of '*' is the wildcard and will match any tag. An empty tag expression '' will match only files with no tags.
 * Wherever a "file" is expected, a list of files may be used instead. These are provided as separate parameters.
 * Note that directories can be tagged as well, so directories may be specified instead of files.
 * The --all, --enter, and --recursive options apply to --add, --remove, --set, --match, and --list, and control whether hidden files are processed and whether directories are entered and/or processed recursively. If a directory is supplied, but neither of --enter or --recursive, then the operation will apply to the directory itself, rather than to its contents.
