@@ -20,9 +20,9 @@ MANPAGE		= Tag/tag.1
 
 all: tag
 
-tag: bin ${PROGRAM}
+tag: ${PROGRAM}
 
-${PROGRAM}: ${SRCS} Makefile
+${PROGRAM}: bin ${SRCS} Makefile
 	${CC} ${CFLAGS} ${SRCS} ${LIBS} -o ${PROGRAM}
 
 bin:
@@ -37,4 +37,4 @@ install: tag
 	${INSTALL} -o ${DSTUSR} -g ${DSTGRP} -m ${DSTMODE} ${PROGRAM} ${DESTDIR}${BINDIR}
 	${INSTALL} -o ${DSTUSR} -g ${DSTGRP} -m ${MANMODE} ${MANPAGE} ${DESTDIR}${MANDIR}
 
-.PHONY: tag clean distclean install
+.PHONY: all tag clean distclean install
