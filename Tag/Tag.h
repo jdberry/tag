@@ -27,6 +27,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <AppKit/Appkit.h>
 
 typedef NS_ENUM(int, OperationMode) {
     OperationModeNone       = -1,
@@ -60,10 +61,12 @@ typedef NS_ENUM(int, SearchScope) {
 @property (assign, nonatomic) SearchScope searchScope;
 
 @property (assign, nonatomic) BOOL displayAllFiles;     // Display all (hidden files)
+@property (assign, nonatomic) BOOL displayColor;        // Display tag names in color
 @property (assign, nonatomic) BOOL recurseDirectories;  // Enter/enumerate directories
 @property (assign, nonatomic) BOOL enterDirectories;    // Recursively process any directory we encounter
 
 @property (copy, nonatomic) NSSet* tags;
+@property (copy, nonatomic) NSDictionary* tagColors;
 @property (copy, nonatomic) NSArray* URLs;
 
 - (void)parseCommandLineArgv:(char * const *)argv argc:(int)argc;

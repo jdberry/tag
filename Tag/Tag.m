@@ -39,6 +39,7 @@
         --all                       While enumerating, evaluate hidden (as well as non-hidden) files/directories
         --enter                     Enter and enumerate directories provided
         --recursive                 Recursively enumerate directories provided
+        --color                     Display tags in color
         --name, --no-name           Override the display of filenames in output for the operation
         --tags, --no-tags           Override the display of tags in output for the operation
         --garrulous, --no-garrulous Override the garrulous formatting of tags (each on own line)
@@ -162,6 +163,7 @@ typedef NS_ENUM(int, CommandCode) {
         { "descend",    no_argument,            0,              'd' },  // Recursively process any directory we encounter (alias for backwards compatibility)
         
         // Format options
+        { "color",      no_argument,            0,              'c' },
         { "name",       no_argument,            0,              'n' },
         { "no-name",    no_argument,            0,              'N' },
         { "tags",       no_argument,            0,              't' },
@@ -188,10 +190,12 @@ typedef NS_ENUM(int, CommandCode) {
     self.searchScope = SearchScopeNone;
     
     self.displayAllFiles = NO;
+    self.displayColor= NO;
     self.recurseDirectories = NO;
     self.enterDirectories = NO;
     
     self.tags = nil;
+    self.tagColors = nil;
     self.URLs = nil;
     
     int name_flag = 0;
@@ -202,7 +206,7 @@ typedef NS_ENUM(int, CommandCode) {
     // Parse Options
     int option_char;
     int option_index;
-    while ((option_char = getopt_long(argc, argv, "s:a:r:m:f:lAeRdnNtTgG0hv", options, &option_index)) != -1)
+    while ((option_char = getopt_long(argc, argv, "s:a:r:m:f:lAeRdnNtTgG0hvc", options, &option_index)) != -1)
     {
         switch (option_char)
         {
@@ -228,6 +232,9 @@ typedef NS_ENUM(int, CommandCode) {
                 
             case 'A':
                 _displayAllFiles = YES;
+                break;
+            case 'c':
+                _displayColor = YES;
                 break;
             case 'e':
                 _enterDirectories = YES;
@@ -305,6 +312,10 @@ typedef NS_ENUM(int, CommandCode) {
     if (nulTerminate)
         _outputFlags |= OutputFlagsNulTerminate;
     
+    if(_displayColor) {
+        self.tagColors = [self getTagsAndColors];
+    }
+     
     // Process any remaining arguments as pathnames, converting into URLs
     [self parseFilenameArguments:&argv[optind] argc:argc - optind];
 }
@@ -378,6 +389,7 @@ typedef NS_ENUM(int, CommandCode) {
            "        -v | --version      Display version\n"
            "        -h | --help         Display this help\n"
            "        -A | --all          Display invisible files while enumerating\n"
+           "        -c | --color        Display tags in color\n"
            "        -e | --enter        Enter and enumerate directories provided\n"
            "        -R | --recursive    Recursively process directories\n"
            "        -n | --name         Turn on filename display in output (default)\n"
@@ -445,8 +457,17 @@ typedef NS_ENUM(int, CommandCode) {
     return [s stringByPaddingToLength:minLength withString:@"    " startingAtIndex:0];
 }
 
+#define COLORS_ESCAPE    @"\033["
+#define COLORS_NONE      COLORS_ESCAPE @"m"
+#define COLORS_GRAY      COLORS_ESCAPE @"48:2:100:100:100m"
+#define COLORS_GREEN     COLORS_ESCAPE @"42m"
+#define COLORS_PURPLE    COLORS_ESCAPE @"48:2:128:0:128m"
+#define COLORS_BLUE      COLORS_ESCAPE @"44m"
+#define COLORS_YELLOW    COLORS_ESCAPE @"43m"
+#define COLORS_RED       COLORS_ESCAPE @"41m"
+#define COLORS_ORANGE    COLORS_ESCAPE @"48:2:255:165:0m"
 
-- (void)emitURL:(NSURL*)URL tags:(NSArray*)tagArray
+- (void)emitURL:(NSURL*)URL tags:(NSArray*)tagArray colors:(NSDictionary*)colors
 {
     NSString* fileName = (_outputFlags & OutputFlagsName) ? [URL relativePath] : nil;
     BOOL tagsOnSeparateLines = !!(_outputFlags & OutputFlagsGarrulous);
@@ -480,11 +501,48 @@ typedef NS_ENUM(int, CommandCode) {
         }
         
         NSString* sep = startingSepator;
+        NSString* color1 = @"";
+        NSString* color2 = @"";
+        
         for (NSString* tag in sortedTags)
         {
             if (needLineTerm)
                 putc(lineTerminator, stdout);
-            Printf(@"%@%@", sep, tag);
+            
+            if(colors != nil) {
+                NSNumber *colorId = [colors objectForKey: tag];
+                long color = [colorId longValue];
+                switch(color) {
+                    case 0:
+                        color1 = COLORS_NONE;
+                        break;
+                    case 1:
+                        color1 = COLORS_GRAY;
+                        break;
+                    case 2:
+                        color1 = COLORS_GREEN;
+                        break;
+                    case 3:
+                        color1 = COLORS_PURPLE;
+                        break;
+                    case 4:
+                        color1 = COLORS_BLUE;
+                        break;
+                    case 5:
+                        color1 = COLORS_YELLOW;
+                        break;
+                    case 6:
+                        color1 = COLORS_RED;
+                        break;
+                    case 7:
+                        color1 = COLORS_ORANGE;
+                        break;
+                        
+                }
+                color2 = COLORS_NONE;
+            }
+            
+            Printf(@"%@%@%@%@", sep, color1, tag, color2);
             sep = tagSeparator;
             needLineTerm = tagsOnSeparateLines;
         }
@@ -712,10 +770,37 @@ typedef NS_ENUM(int, CommandCode) {
             || (matchNone && tagCount == 0)
             || (!matchNone && [self.tags isSubsetOfSet:[self tagSetFromTagArray:tagArray]])
             )
-            [self emitURL:URL tags:tagArray];
+            [self emitURL:URL tags:tagArray colors: self.tagColors];
     }];
 }
 
+- (NSMutableDictionary*)getTagsAndColors
+{
+    // Get the tags color
+    NSError* error;
+    NSString *homeDir = NSHomeDirectory();
+    NSString *plist = [homeDir stringByAppendingString: @"/Library/SyncedPreferences/com.apple.finder.plist"];
+    NSURL *url = [NSURL fileURLWithPath:plist];
+    NSData *data = [NSData dataWithContentsOfURL:url];
+    
+    NSPropertyListSerialization *prop = [NSPropertyListSerialization propertyListWithData:data options:NSPropertyListImmutable format:nil error:&error];
+    
+    NSArray *tagsArray = [prop valueForKeyPath:@"values.FinderTagDict.value.FinderTags"];
+    NSUInteger tagCount = [tagsArray count];
+    
+    NSMutableDictionary *colors = [NSMutableDictionary dictionaryWithCapacity: 10];
+    
+    for(int i=0;i<tagCount;i++) {
+        NSDictionary *dictionary = tagsArray[i];
+        NSString *tagName = dictionary[@"n"];
+        NSNumber *colorCode = dictionary[@"l"];
+        if(colorCode == nil) {
+            colorCode = [NSNumber numberWithLong:-1];
+        }
+        [colors setObject:colorCode forKey:tagName];
+    }
+    return colors;
+}
 
 - (void)doList
 {
@@ -728,11 +813,12 @@ typedef NS_ENUM(int, CommandCode) {
         if (![URL getResourceValue:&tagArray forKey:NSURLTagNamesKey error:&error])
             [self reportFatalError:error onURL:URL];
         
+        
         // Emit
-        [self emitURL:URL tags:tagArray];
+        [self emitURL:URL tags:tagArray colors: self.tagColors];
+         
     }];
 }
-
 
 - (void)doFind
 {
@@ -868,7 +954,7 @@ typedef NS_ENUM(int, CommandCode) {
                 NSURL* URL = [NSURL fileURLWithPath:path];
                 NSArray* tagArray = [theResult valueForAttribute:kMDItemUserTags];
                 
-                [self emitURL:URL tags:tagArray];
+                [self emitURL:URL tags:tagArray colors: self.tagColors];
             }
         }
     }

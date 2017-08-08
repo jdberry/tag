@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0DBD0F401EE46C8900EF3B3E /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0DBD0F3F1EE46C8900EF3B3E /* AppKit.framework */; };
 		901F140E181B16A00007C852 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 901F140D181B16A00007C852 /* Foundation.framework */; };
 		901F1411181B16A00007C852 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 901F1410181B16A00007C852 /* main.m */; };
 		901F1415181B16A00007C852 /* tag.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 901F1414181B16A00007C852 /* tag.1 */; };
@@ -29,7 +30,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		901F140A181B16A00007C852 /* tag */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = tag; sourceTree = BUILT_PRODUCTS_DIR; };
+		0DBD0F3F1EE46C8900EF3B3E /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		901F140A181B16A00007C852 /* tag */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "compiled.mach-o.executable"; path = tag; sourceTree = BUILT_PRODUCTS_DIR; };
 		901F140D181B16A00007C852 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		901F1410181B16A00007C852 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		901F1413181B16A00007C852 /* Tag-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Tag-Prefix.pch"; sourceTree = "<group>"; };
@@ -49,6 +51,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0DBD0F401EE46C8900EF3B3E /* AppKit.framework in Frameworks */,
 				901F141F181B469E0007C852 /* CoreServices.framework in Frameworks */,
 				901F140E181B16A00007C852 /* Foundation.framework in Frameworks */,
 			);
@@ -80,6 +83,7 @@
 		901F140C181B16A00007C852 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				0DBD0F3F1EE46C8900EF3B3E /* AppKit.framework */,
 				901F141E181B469E0007C852 /* CoreServices.framework */,
 				901F140D181B16A00007C852 /* Foundation.framework */,
 			);
@@ -134,7 +138,7 @@
 		901F1402181B16A00007C852 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0500;
+				LastUpgradeCheck = 0820;
 				ORGANIZATIONNAME = "Culinate, Inc.";
 			};
 			buildConfigurationList = 901F1405181B16A00007C852 /* Build configuration list for PBXProject "Tag" */;
@@ -180,13 +184,19 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -217,14 +227,19 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
