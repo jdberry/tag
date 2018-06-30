@@ -386,9 +386,9 @@ typedef NS_ENUM(int, CommandCode) {
            "        -T | --no-tags      Turn off tags display in output (list)\n"
            "        -g | --garrulous    Display tags each on own line (list, find, match)\n"
            "        -G | --no-garrulous Display tags comma-separated after filename (default)\n"
-           "        -H | --home         Find tagged files in user home directory\n"
-           "        -L | --local        Find tagged files in home + local filesystems\n"
-           "        -R | --network      Find tagged files in home + local + network filesystems\n"
+           "           | --home         Find tagged files in user home directory\n"
+           "           | --local        Find tagged files in home + local filesystems\n"
+           "           | --network      Find tagged files in home + local + network filesystems\n"
            "        -0 | --nul          Terminate lines with NUL (\\0) for use with xargs -0\n"
     );
 }
