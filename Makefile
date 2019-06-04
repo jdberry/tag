@@ -1,7 +1,7 @@
 prefix		= /usr/local
 DESTDIR		= 
 
-DSTUSR		= root
+DSTUSR		= ${USER}
 DSTGRP		= admin
 DSTMODE		= 0755
 MANMODE		= 0644
@@ -34,7 +34,13 @@ clean:
 distclean: clean
 
 install: tag
+	mkdir -p ${DESTDIR}${BINDIR}
+	mkdir -p ${DESTDIR}${MANDIR}
 	${INSTALL} -o ${DSTUSR} -g ${DSTGRP} -m ${DSTMODE} ${PROGRAM} ${DESTDIR}${BINDIR}
 	${INSTALL} -o ${DSTUSR} -g ${DSTGRP} -m ${MANMODE} ${MANPAGE} ${DESTDIR}${MANDIR}
 
-.PHONY: all tag clean distclean install
+uninstall:
+	rm -f ${DESTDIR}${BINDIR}/$(notdir ${PROGRAM})
+	rm -f ${DESTDIR}${MANDIR}/$(notdir ${MANPAGE})
+
+.PHONY: all tag clean distclean install uninstall
