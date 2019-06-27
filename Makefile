@@ -1,15 +1,12 @@
 prefix		= /usr/local
-DESTDIR		= 
 
-DSTUSR		= ${USER}
-DSTGRP		= admin
 DSTMODE		= 0755
 MANMODE		= 0644
 
 INSTALL		= /usr/bin/install
 
-BINDIR 		= ${prefix}/bin
-MANDIR		= ${prefix}/share/man/man1
+bindir 		= ${prefix}/bin
+man1dir		= ${prefix}/share/man/man1
 
 SRCS		= Tag/main.m Tag/Tag.m Tag/TagName.m
 LIBS		= -framework Foundation \
@@ -33,14 +30,16 @@ clean:
 	
 distclean: clean
 
-install: tag
-	mkdir -p ${DESTDIR}${BINDIR}
-	mkdir -p ${DESTDIR}${MANDIR}
-	${INSTALL} -o ${DSTUSR} -g ${DSTGRP} -m ${DSTMODE} ${PROGRAM} ${DESTDIR}${BINDIR}
-	${INSTALL} -o ${DSTUSR} -g ${DSTGRP} -m ${MANMODE} ${MANPAGE} ${DESTDIR}${MANDIR}
+install: tag installdirs
+	${INSTALL} -m ${DSTMODE} ${PROGRAM} ${DESTDIR}${bindir}
+	${INSTALL} -m ${MANMODE} ${MANPAGE} ${DESTDIR}${man1dir}
+
+installdirs:
+	mkdir -p ${DESTDIR}${bindir}
+	mkdir -p ${DESTDIR}${man1dir}
 
 uninstall:
-	rm -f ${DESTDIR}${BINDIR}/$(notdir ${PROGRAM})
-	rm -f ${DESTDIR}${MANDIR}/$(notdir ${MANPAGE})
+	rm -f ${DESTDIR}${bindir}/$(notdir ${PROGRAM})
+	rm -f ${DESTDIR}${man1dir}/$(notdir ${MANPAGE})
 
-.PHONY: all tag clean distclean install uninstall
+.PHONY: all tag clean distclean install installdirs uninstall
