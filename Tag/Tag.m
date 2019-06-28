@@ -466,20 +466,20 @@ typedef NS_ENUM(int, CommandCode) {
         NSArray* sortedTags = [tagArray sortedArrayUsingSelector:@selector(compare:)];
     
         NSString* tagSeparator;
-        NSString* startingSepator;
+        NSString* startingSeparator;
         if (tagsOnSeparateLines)
         {
             needLineTerm = !!fileName;
             tagSeparator = fileName ? @"    " : @"";
-            startingSepator = tagSeparator;
+            startingSeparator = tagSeparator;
         }
         else
         {
             tagSeparator = @",";
-            startingSepator = fileName ? @"\t" : @"";
+            startingSeparator = fileName ? @"\t" : @"";
         }
         
-        NSString* sep = startingSepator;
+        NSString* sep = startingSeparator;
         for (NSString* tag in sortedTags)
         {
             if (needLineTerm)
