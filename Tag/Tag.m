@@ -887,7 +887,6 @@ typedef NS_ENUM(int, CommandCode) {
         // Display the statistics
         NSDictionary* valueLists = [_metadataQuery valueLists];
         NSArray* tagTuples = valueLists[kMDItemUserTags];
-        NSLog(@"%@", tagTuples);
         for (NSMetadataQueryAttributeValueTuple* tuple in tagTuples)
         {
             NSString* tag = (tuple.value == [NSNull null]) ? @"<no_tag>" : tuple.value;
