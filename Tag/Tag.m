@@ -28,32 +28,7 @@
 
 
 /*
-    tag --set <tags> <path>...
-    tag --add <tags> <path>...
-    tag --remove <tags> <path>...
-    tag --match <tags> <path>...
-    tag --find <tags> <path>...
-    tag --list <path>...
- 
-    additional options:
-        --all                       While enumerating, evaluate hidden (as well as non-hidden) files/directories
-        --enter                     Enter and enumerate directories provided
-        --recursive                 Recursively enumerate directories provided
-        --color                     Display tags in color
-        --name, --no-name           Override the display of filenames in output for the operation
-        --tags, --no-tags           Override the display of tags in output for the operation
-        --garrulous, --no-garrulous Override the garrulous formatting of tags (each on own line)
-        --home                      Find files only within the user home directory
-        --local                     Find files only within the home directory and on local filesystems
-        --network                   Additionally, find files on attached remove filesystems
-        --nul                       Terminate lines with NUL (\0) for use with xargs -0
-        --version                   Display the version
-        --help                      Display help
- */
-
-
-/*
- TODO:
+ FUTURE POTENTIALS:
  
     Potential simple boolean tag query:
  
