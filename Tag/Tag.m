@@ -896,10 +896,8 @@ typedef NS_ENUM(int, CommandCode) {
     else
     {
         // Print results from the query
-        for (NSUInteger i = 0; i < [_metadataQuery resultCount]; i++)
-        {
+        [_metadataQuery enumerateResultsUsingBlock:^(NSMetadataItem* theResult, NSUInteger idx, BOOL * _Nonnull stop) {
             @autoreleasepool {
-                NSMetadataItem* theResult = [_metadataQuery resultAtIndex:i];
                 NSString* path = [theResult valueForAttribute:(NSString *)kMDItemPath];
                 if (path)
                 {
@@ -909,7 +907,7 @@ typedef NS_ENUM(int, CommandCode) {
                     [self emitURL:URL tags:tagArray];
                 }
             }
-        }
+        }];
     }
     
     // Remove the query
