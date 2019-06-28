@@ -532,7 +532,7 @@ typedef NS_ENUM(int, CommandCode) {
     
     NSFileManager* fileManager = [NSFileManager defaultManager];
     NSDirectoryEnumerator* enumerator = [fileManager enumeratorAtURL:baseURL
-                                          includingPropertiesForKeys:@[]
+                                          includingPropertiesForKeys:@[NSURLTagNamesKey]
                                                              options:enumerationOptions
                                                         errorHandler:nil];
     
