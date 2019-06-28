@@ -169,7 +169,8 @@ typedef NS_ENUM(int, CommandCode) {
         { "garrulous",  no_argument,            0,              'g' },
         { "no-garrulous", no_argument,          0,              'G' },
         { "nul",        no_argument,            0,              '0' },
-        
+        { "slash",      no_argument,            0,              'p' },  // Write a slash ('/') after is each filename if that file is a directory
+
         // Search Scope
         { "home",       no_argument,            0,              CommandCodeHome },
         { "local",      no_argument,            0,              CommandCodeLocal },
@@ -197,12 +198,13 @@ typedef NS_ENUM(int, CommandCode) {
     int name_flag = 0;
     int tags_flag = 0;
     int garrulous_flag = 0;
+    BOOL slash = NO;
     BOOL nulTerminate = NO;
     
     // Parse Options
     int option_char;
     int option_index;
-    while ((option_char = getopt_long(argc, argv, "s:a:r:m:f:lAeRdnNtTgG0hv", options, &option_index)) != -1)
+    while ((option_char = getopt_long(argc, argv, "s:a:r:m:f:lAeRdnNtTgGp0hv", options, &option_index)) != -1)
     {
         switch (option_char)
         {
@@ -268,6 +270,10 @@ typedef NS_ENUM(int, CommandCode) {
                 _searchScope = SearchScopeNetwork;
                 break;
                 
+            case 'p':
+                slash = YES;
+                break;
+                
             case '0':
                 nulTerminate = YES;
                 break;
@@ -302,6 +308,8 @@ typedef NS_ENUM(int, CommandCode) {
     if (garrulous_flag)
         _outputFlags = (_outputFlags & ~OutputFlagsGarrulous) | ((garrulous_flag - 1) * OutputFlagsGarrulous);
     
+    if (slash)
+        _outputFlags |= OutputFlagsSlashDirectory;
     if (nulTerminate)
         _outputFlags |= OutputFlagsNulTerminate;
     
@@ -386,10 +394,11 @@ typedef NS_ENUM(int, CommandCode) {
            "        -T | --no-tags      Turn off tags display in output (list)\n"
            "        -g | --garrulous    Display tags each on own line (list, find, match)\n"
            "        -G | --no-garrulous Display tags comma-separated after filename (default)\n"
+           "        -p | --slash        Terminate each directory name with a slash\n"
+           "        -0 | --nul          Terminate lines with NUL (\\0) for use with xargs -0\n"
            "             --home         Find tagged files in user home directory\n"
            "             --local        Find tagged files in home + local filesystems\n"
            "             --network      Find tagged files in home + local + network filesystems\n"
-           "        -0 | --nul          Terminate lines with NUL (\\0) for use with xargs -0\n"
     );
 }
 
@@ -448,7 +457,20 @@ typedef NS_ENUM(int, CommandCode) {
 
 - (void)emitURL:(NSURL*)URL tags:(NSArray*)tagArray
 {
-    NSString* fileName = (_outputFlags & OutputFlagsName) ? [URL relativePath] : nil;
+    NSString* fileName = nil;
+    if (_outputFlags & OutputFlagsName)
+    {
+        NSString* suffix = @"";
+        if (_outputFlags & OutputFlagsSlashDirectory)
+        {
+            NSNumber* isDir = nil;
+            [URL getResourceValue:&isDir forKey:NSURLIsDirectoryKey error:nil];
+            if ([isDir boolValue])
+                suffix = @"/";
+        }
+        fileName = [NSString stringWithFormat:@"%@%@", [URL relativePath], suffix];
+    }
+    
     BOOL tagsOnSeparateLines = !!(_outputFlags & OutputFlagsGarrulous);
     BOOL printTags = (_outputFlags & OutputFlagsTags) && [tagArray count];
     char lineTerminator = (_outputFlags & OutputFlagsNulTerminate) ? '\0' : '\n';

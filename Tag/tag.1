@@ -65,6 +65,12 @@ Display tags each on own line (list, find, match)
 .BR \-G ", " \-\-no-garrulous
 Display tags comma-separated after filename (default)
 .TP
+.BR \-p ", " \-\-slash
+Terminate each directory name with a slash
+.TP
+.BR \-0 ", " \-\-null
+Terminate lines with NUL (\0) for use with xargs -0
+.TP
 .BR "    \-\-home"
 Find tagged files in user home directory
 .TP
@@ -73,9 +79,6 @@ Find tagged files in home + local filesystems
 .TP
 .BR "    \-\-network"qq
 Find tagged files in home + local + network filesystems
-.TP
-.BR \-0 ", " \-\-null
-Terminate lines with NUL (\0) for use with xargs -0
 .
 .SH BUGS
 Report on https://github.com/jdberry/tag/issues

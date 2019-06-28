@@ -28,10 +28,11 @@ Usage
 			-T | --no-tags      Turn off tags display in output (list)
 			-g | --garrulous    Display tags each on own line (list, find, match)
 			-G | --no-garrulous Display tags comma-separated after filename (default)
+			-p | --slash        Terminate each directory name with a slash
+			-0 | --nul          Terminate lines with NUL (\0) for use with xargs -0
 			     --home         Find tagged files in user home directory
 			     --local        Find tagged files in home + local filesystems
 			     --network      Find tagged files in home + local + network filesystems
-			-0 | --nul          Terminate lines with NUL (\0) for use with xargs -0
 
 ### Add tags to a file
 

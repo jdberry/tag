@@ -40,10 +40,11 @@ typedef NS_ENUM(int, OperationMode) {
 };
 
 typedef NS_OPTIONS(int, OutputFlags) {
-    OutputFlagsName         = (1 << 0),
-    OutputFlagsTags         = (1 << 1),
-    OutputFlagsGarrulous    = (1 << 2),
-    OutputFlagsNulTerminate = (1 << 3),
+    OutputFlagsName             = (1 << 0),
+    OutputFlagsTags             = (1 << 1),
+    OutputFlagsGarrulous        = (1 << 2),
+    OutputFlagsSlashDirectory   = (1 << 3),
+    OutputFlagsNulTerminate     = (1 << 4)
 };
 
 typedef NS_ENUM(int, SearchScope) {
