@@ -32,7 +32,7 @@
 // but retain their original case in visibleName. TagName objects are used
 // in forming sets of tags.
 
-@interface TagName : NSObject
+@interface TagName : NSObject<NSCopying>
 
 - (instancetype)initWithTag:(NSString*)tag;
 

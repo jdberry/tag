@@ -67,6 +67,8 @@ typedef NS_ENUM(int, SearchScope) {
 @property (copy, nonatomic) NSSet* tags;
 @property (copy, nonatomic) NSArray* URLs;
 
+@property (copy, nonatomic) NSDictionary* tagColors;
+
 - (void)parseCommandLineArgv:(char * const *)argv argc:(int)argc;
 - (void)performOperation;
 

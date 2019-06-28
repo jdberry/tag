@@ -39,6 +39,7 @@
         --all                       While enumerating, evaluate hidden (as well as non-hidden) files/directories
         --enter                     Enter and enumerate directories provided
         --recursive                 Recursively enumerate directories provided
+        --color                     Display tags in color
         --name, --no-name           Override the display of filenames in output for the operation
         --tags, --no-tags           Override the display of tags in output for the operation
         --garrulous, --no-garrulous Override the garrulous formatting of tags (each on own line)
@@ -71,7 +72,6 @@
  
         Use NSPredicate for both find and match?
  */
-
 
 #import "Tag.h"
 #import "TagName.h"
@@ -168,8 +168,9 @@ typedef NS_ENUM(int, CommandCode) {
         { "no-tags",    no_argument,            0,              'T' },
         { "garrulous",  no_argument,            0,              'g' },
         { "no-garrulous", no_argument,          0,              'G' },
-        { "nul",        no_argument,            0,              '0' },
+        { "color",      no_argument,            0,              'c' },
         { "slash",      no_argument,            0,              'p' },  // Write a slash ('/') after is each filename if that file is a directory
+        { "nul",        no_argument,            0,              '0' },
 
         // Search Scope
         { "home",       no_argument,            0,              CommandCodeHome },
@@ -195,16 +196,20 @@ typedef NS_ENUM(int, CommandCode) {
     self.tags = nil;
     self.URLs = nil;
     
+    self.tagColors = nil;
+
     int name_flag = 0;
     int tags_flag = 0;
     int garrulous_flag = 0;
+    
     BOOL slash = NO;
+    BOOL color = NO;
     BOOL nulTerminate = NO;
     
     // Parse Options
     int option_char;
     int option_index;
-    while ((option_char = getopt_long(argc, argv, "s:a:r:m:f:lAeRdnNtTgGp0hv", options, &option_index)) != -1)
+    while ((option_char = getopt_long(argc, argv, "s:a:r:m:f:lAeRdnNtTgGcp0hv", options, &option_index)) != -1)
     {
         switch (option_char)
         {
@@ -270,6 +275,10 @@ typedef NS_ENUM(int, CommandCode) {
                 _searchScope = SearchScopeNetwork;
                 break;
                 
+            case 'c':
+                color = YES;
+                break;
+
             case 'p':
                 slash = YES;
                 break;
@@ -308,11 +317,16 @@ typedef NS_ENUM(int, CommandCode) {
     if (garrulous_flag)
         _outputFlags = (_outputFlags & ~OutputFlagsGarrulous) | ((garrulous_flag - 1) * OutputFlagsGarrulous);
     
+    // Set additional output flags
     if (slash)
         _outputFlags |= OutputFlagsSlashDirectory;
     if (nulTerminate)
         _outputFlags |= OutputFlagsNulTerminate;
     
+    // Get colors if we're able to use them. If tagColors is nil, we won't try to emit color escapes
+    if (color && isatty(fileno(stdout)))
+        self.tagColors = [self getTagColors];
+
     // Process any remaining arguments as pathnames, converting into URLs
     [self parseFilenameArguments:&argv[optind] argc:argc - optind];
 }
@@ -394,12 +408,96 @@ typedef NS_ENUM(int, CommandCode) {
            "        -T | --no-tags      Turn off tags display in output (list)\n"
            "        -g | --garrulous    Display tags each on own line (list, find, match)\n"
            "        -G | --no-garrulous Display tags comma-separated after filename (default)\n"
+           "        -c | --color        Display tags in color\n"
            "        -p | --slash        Terminate each directory name with a slash\n"
            "        -0 | --nul          Terminate lines with NUL (\\0) for use with xargs -0\n"
            "             --home         Find tagged files in user home directory\n"
            "             --local        Find tagged files in home + local filesystems\n"
            "             --network      Find tagged files in home + local + network filesystems\n"
     );
+}
+
+
+#define COLORS_ESCAPE    @"\033["
+#define COLORS_NONE      COLORS_ESCAPE @"m"
+#define COLORS_GRAY      COLORS_ESCAPE @"48;5;241m"
+#define COLORS_GREEN     COLORS_ESCAPE @"42m"
+#define COLORS_PURPLE    COLORS_ESCAPE @"48;5;129m"
+#define COLORS_BLUE      COLORS_ESCAPE @"44m"
+#define COLORS_YELLOW    COLORS_ESCAPE @"43m"
+#define COLORS_RED       COLORS_ESCAPE @"41m"
+#define COLORS_ORANGE    COLORS_ESCAPE @"48;5;208m"
+
+
+- (NSDictionary*)getTagColors
+{
+    // Get the tag colors
+    //
+    // Since this is using private finder data structures, it may not always continue to work.
+    // We make a best effort attempt and try to bail if we don't find what we expect to find there
+    
+    NSError* error;
+    NSString* homeDir = NSHomeDirectory();
+    NSString* finderPlistPath = [homeDir stringByAppendingString: @"/Library/SyncedPreferences/com.apple.finder.plist"];
+    NSURL* url = [NSURL fileURLWithPath:finderPlistPath];
+    
+    NSData* data = [NSData dataWithContentsOfURL:url];
+    if (!data)
+        return nil;
+
+    id properties = [NSPropertyListSerialization propertyListWithData:data options:NSPropertyListImmutable format:nil error:&error];
+    if (!properties)
+        return nil;
+    
+    NSArray* tagsArray = [properties valueForKeyPath:@"values.FinderTagDict.value.FinderTags"];
+    if (![tagsArray isKindOfClass:[NSArray class]])
+        return nil;
+    
+    // Form a map from tag name to color escape sequence for that tag
+    NSUInteger tagCount = [tagsArray count];
+    NSMutableDictionary *colors = [NSMutableDictionary dictionaryWithCapacity:tagCount];
+    
+    for (NSDictionary* tagEntry in tagsArray)
+    {
+        if (![tagEntry isKindOfClass:[NSDictionary class]])
+            return nil;
+        
+        NSString* tag = tagEntry[@"n"];
+        NSNumber* colorCode = tagEntry[@"l"];
+        if (tag == nil || colorCode == nil)
+            continue;
+        
+        NSString* colorSequence = nil;
+        switch ([colorCode intValue])
+        {
+            case 1:
+                colorSequence = COLORS_GRAY;
+                break;
+            case 2:
+                colorSequence = COLORS_GREEN;
+                break;
+            case 3:
+                colorSequence = COLORS_PURPLE;
+                break;
+            case 4:
+                colorSequence = COLORS_BLUE;
+                break;
+            case 5:
+                colorSequence = COLORS_YELLOW;
+                break;
+            case 6:
+                colorSequence = COLORS_RED;
+                break;
+            case 7:
+                colorSequence = COLORS_ORANGE;
+                break;
+        }
+        
+        if (colorSequence != nil)
+            [colors setObject:colorSequence forKey:[[TagName alloc] initWithTag:tag]];
+    }
+
+    return [colors copy];
 }
 
 
@@ -506,7 +604,13 @@ typedef NS_ENUM(int, CommandCode) {
         {
             if (needLineTerm)
                 putc(lineTerminator, stdout);
-            Printf(@"%@%@", sep, tag);
+            
+            NSString* colorSequence = (self.tagColors != nil) ? _tagColors[[[TagName alloc] initWithTag:tag]] : nil;
+            if (colorSequence != nil)
+                Printf(@"%@%@%@%@", sep, colorSequence, tag, COLORS_NONE);
+            else
+                Printf(@"%@%@", sep, tag);
+
             sep = tagSeparator;
             needLineTerm = tagsOnSeparateLines;
         }

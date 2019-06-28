@@ -64,4 +64,16 @@
 }
 
 
+- (id)copyWithZone:(NSZone *)zone
+{
+    return self;
+}
+
+
+- (NSString *)description
+{
+    return [NSString stringWithFormat:@"TagName<%@>", _visibleName];
+}
+
+
 @end
