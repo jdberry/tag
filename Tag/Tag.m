@@ -52,7 +52,7 @@
 #import "TagName.h"
 #import <getopt.h>
 
-NSString* const version = @"0.9.0";
+NSString* const version = @"0.10.0";
 
 // This constant doesn't seem to be defined in MDItem.h, so we define it here
 NSString* const kMDItemUserTags = @"kMDItemUserTags";
