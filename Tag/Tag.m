@@ -127,7 +127,8 @@ typedef NS_ENUM(int, CommandCode) {
         { "remove",     required_argument,      0,              OperationModeRemove },
         { "match",      required_argument,      0,              OperationModeMatch },
         { "find",       required_argument,      0,              OperationModeFind },
-        
+        { "usage",      required_argument,      0,              OperationModeUsage },
+
         { "list",       no_argument,            0,              OperationModeList },
         
         // Directory Enumeration Options
@@ -184,7 +185,7 @@ typedef NS_ENUM(int, CommandCode) {
     // Parse Options
     int option_char;
     int option_index;
-    while ((option_char = getopt_long(argc, argv, "s:a:r:m:f:lAeRdnNtTgGcp0hv", options, &option_index)) != -1)
+    while ((option_char = getopt_long(argc, argv, "s:a:r:m:f:u:lAeRdnNtTgGcp0hv", options, &option_index)) != -1)
     {
         switch (option_char)
         {
@@ -193,6 +194,7 @@ typedef NS_ENUM(int, CommandCode) {
             case OperationModeRemove:
             case OperationModeMatch:
             case OperationModeFind:
+            case OperationModeUsage:
             case OperationModeList:
             {
                 if (self.operationMode)
@@ -359,6 +361,7 @@ typedef NS_ENUM(int, CommandCode) {
     Printf(@"%@ v%@\n", [self programName], version);
 }
 
+// show, display, enumerate, discover, all, usage
 
 - (void)displayHelp
 {
@@ -368,8 +371,9 @@ typedef NS_ENUM(int, CommandCode) {
            "    tag -r | --remove <tags> <path>...  Remove tags from file\n"
            "    tag -s | --set <tags> <path>...     Set tags on file\n"
            "    tag -m | --match <tags> <path>...   Display files with matching tags\n"
-           "    tag -l | --list <path>...           List the tags on file\n"
            "    tag -f | --find <tags> <path>...    Find all files with tags (-A, -e, -R ignored)\n"
+           "    tag -u | --usage <tags> <path>...   Display tags used, with usage counts\n"
+           "    tag -l | --list <path>...           List the tags on file\n"
            "  <tags> is a comma-separated list of tag names; use * to match/find any tag.\n"
            "  additional options:\n"
            "        -v | --version      Display version\n"
@@ -500,6 +504,10 @@ typedef NS_ENUM(int, CommandCode) {
             [self doFind];
             break;
 
+        case OperationModeUsage:
+            [self doUsage];
+            break;
+            
         case OperationModeList:
             [self doList];
             break;
@@ -525,6 +533,18 @@ typedef NS_ENUM(int, CommandCode) {
         return s;
     
     return [s stringByPaddingToLength:minLength withString:@"    " startingAtIndex:0];
+}
+
+
+- (NSString*)displayStringForTag:(NSString*)tag
+{
+    NSString* result = nil;
+    NSString* colorSequence = (self.tagColors != nil) ? _tagColors[[[TagName alloc] initWithTag:tag]] : nil;
+    if (colorSequence != nil)
+        result = [NSString stringWithFormat:@"%@%@%@", colorSequence, tag, COLORS_NONE];
+    else
+        result = tag;
+    return result;
 }
 
 
@@ -580,11 +600,7 @@ typedef NS_ENUM(int, CommandCode) {
             if (needLineTerm)
                 putc(lineTerminator, stdout);
             
-            NSString* colorSequence = (self.tagColors != nil) ? _tagColors[[[TagName alloc] initWithTag:tag]] : nil;
-            if (colorSequence != nil)
-                Printf(@"%@%@%@%@", sep, colorSequence, tag, COLORS_NONE);
-            else
-                Printf(@"%@%@", sep, tag);
+            Printf(@"%@%@", sep, [self displayStringForTag:tag]);
 
             sep = tagSeparator;
             needLineTerm = tagsOnSeparateLines;
@@ -837,13 +853,68 @@ typedef NS_ENUM(int, CommandCode) {
 
 - (void)doFind
 {
+    [self findGutsUsageMode:NO];
+}
+
+
+- (void)doUsage
+{
+    [self findGutsUsageMode:YES];
+}
+
+
+- (void)findGutsUsageMode:(BOOL)usageMode
+{
     // Start a metadata search for files containing all of the given tags
-    [self initiateMetadataSearchForTags:self.tags];
+    [self initiateMetadataSearchForTags:self.tags usageMode:usageMode];
     
     // Enter the run loop, exiting only when the query is done
     NSRunLoop *runLoop = [NSRunLoop currentRunLoop];
-    while (_metadataQuery && [runLoop runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]])
+    while (!_metadataQuery.stopped && [runLoop runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]])
         ;
+    
+    // Remove the notification observers
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:NSMetadataQueryDidUpdateNotification
+                                                  object:_metadataQuery];
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:NSMetadataQueryDidFinishGatheringNotification
+                                                  object:_metadataQuery];
+
+    // Emit the results of the query
+    if (usageMode)
+    {
+        // Display the statistics
+        NSDictionary* valueLists = [_metadataQuery valueLists];
+        NSArray* tagTuples = valueLists[kMDItemUserTags];
+        NSLog(@"%@", tagTuples);
+        for (NSMetadataQueryAttributeValueTuple* tuple in tagTuples)
+        {
+            NSString* tag = (tuple.value == [NSNull null]) ? @"<no_tag>" : tuple.value;
+            Printf(@"%@\t(%ld)\n", [self displayStringForTag:tag], (long)tuple.count);
+        }
+    }
+    else
+    {
+        // Print results from the query
+        for (NSUInteger i = 0; i < [_metadataQuery resultCount]; i++)
+        {
+            @autoreleasepool {
+                NSMetadataItem* theResult = [_metadataQuery resultAtIndex:i];
+                NSString* path = [theResult valueForAttribute:(NSString *)kMDItemPath];
+                if (path)
+                {
+                    NSURL* URL = [NSURL fileURLWithPath:path];
+                    NSArray* tagArray = [theResult valueForAttribute:kMDItemUserTags];
+                    
+                    [self emitURL:URL tags:tagArray];
+                }
+            }
+        }
+    }
+    
+    // Remove the query
+    self.metadataQuery = nil;
 }
 
 
@@ -907,10 +978,10 @@ typedef NS_ENUM(int, CommandCode) {
 }
 
 
-- (void)initiateMetadataSearchForTags:(NSSet*)tagSet
+- (void)initiateMetadataSearchForTags:(NSSet*)tagSet usageMode:(BOOL)usageMode
 {
     // Create the metadata query instance
-    self.metadataQuery=[[NSMetadataQuery alloc] init];
+    self.metadataQuery = [[NSMetadataQuery alloc] init];
     
     // Register the notifications for batch and completion updates
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -937,11 +1008,15 @@ typedef NS_ENUM(int, CommandCode) {
                                                              ascending:YES];
     [_metadataQuery setSortDescriptors:[NSArray arrayWithObject:sortKeys]];
     
+    // If we're collecting usage stats, request that values be saved for tags
+    if (usageMode)
+        [_metadataQuery setValueListAttributes:@[kMDItemUserTags]];
+    
     // Ask the query to send notifications on the main thread, which will
     // ensure we process them on the main thread, and will also ensure that our
     // main thread is kicked so that the run loop will iterate and thus complete.
     [_metadataQuery setOperationQueue:[NSOperationQueue mainQueue]];
-
+    
     // Begin the asynchronous query
     [_metadataQuery startQuery];
 }
@@ -956,35 +1031,8 @@ typedef NS_ENUM(int, CommandCode) {
 - (void)queryComplete:sender
 {
     // Stop the query, the single pass is completed.
+    // This will cause our runloop loop to terminate.
     [_metadataQuery stopQuery];
-    
-    // Print results from the query
-    for (NSUInteger i = 0; i < [_metadataQuery resultCount]; i++)
-    {
-        @autoreleasepool {
-            NSMetadataItem* theResult = [_metadataQuery resultAtIndex:i];
-            NSString* path = [theResult valueForAttribute:(NSString *)kMDItemPath];
-            if (path)
-            {
-                NSURL* URL = [NSURL fileURLWithPath:path];
-                NSArray* tagArray = [theResult valueForAttribute:kMDItemUserTags];
-                
-                [self emitURL:URL tags:tagArray];
-            }
-        }
-    }
-    
-    // Remove the notification observers
-    [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name:NSMetadataQueryDidUpdateNotification
-                                                  object:_metadataQuery];
-    [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name:NSMetadataQueryDidFinishGatheringNotification
-                                                  object:_metadataQuery];
-    
-    // Remove the query, also serving as a semaphore that we want to
-    // exit our RunLoop loop.
-    self.metadataQuery = nil;
 }
 
 
