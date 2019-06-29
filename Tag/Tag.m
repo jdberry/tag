@@ -59,9 +59,6 @@ NSString* const kMDItemUserTags = @"kMDItemUserTags";
 
 
 @interface Tag ()
-
-@property (strong, nonatomic) NSMetadataQuery* metadataQuery;
-
 @end
 
 
@@ -866,26 +863,13 @@ typedef NS_ENUM(int, CommandCode) {
 - (void)findGutsUsageMode:(BOOL)usageMode
 {
     // Start a metadata search for files containing all of the given tags
-    [self initiateMetadataSearchForTags:self.tags usageMode:usageMode];
+    NSMetadataQuery* metadataQuery = [self performMetadataSearchForTags:self.tags usageMode:usageMode];
     
-    // Enter the run loop, exiting only when the query is done
-    NSRunLoop *runLoop = [NSRunLoop currentRunLoop];
-    while (!_metadataQuery.stopped && [runLoop runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]])
-        ;
-    
-    // Remove the notification observers
-    [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name:NSMetadataQueryDidUpdateNotification
-                                                  object:_metadataQuery];
-    [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name:NSMetadataQueryDidFinishGatheringNotification
-                                                  object:_metadataQuery];
-
-    // Emit the results of the query
+    // Emit the results of the query, either for tags or for usage
     if (usageMode)
     {
-        // Display the statistics
-        NSDictionary* valueLists = [_metadataQuery valueLists];
+        // Print the statistics, ignoring the general query results
+        NSDictionary* valueLists = [metadataQuery valueLists];
         NSArray* tagTuples = valueLists[kMDItemUserTags];
         for (NSMetadataQueryAttributeValueTuple* tuple in tagTuples)
         {
@@ -895,8 +879,8 @@ typedef NS_ENUM(int, CommandCode) {
     }
     else
     {
-        // Print results from the query
-        [_metadataQuery enumerateResultsUsingBlock:^(NSMetadataItem* theResult, NSUInteger idx, BOOL * _Nonnull stop) {
+        // Print the query results
+        [metadataQuery enumerateResultsUsingBlock:^(NSMetadataItem* theResult, NSUInteger idx, BOOL * _Nonnull stop) {
             @autoreleasepool {
                 NSString* path = [theResult valueForAttribute:(NSString *)kMDItemPath];
                 if (path)
@@ -909,9 +893,6 @@ typedef NS_ENUM(int, CommandCode) {
             }
         }];
     }
-    
-    // Remove the query
-    self.metadataQuery = nil;
 }
 
 
@@ -975,61 +956,63 @@ typedef NS_ENUM(int, CommandCode) {
 }
 
 
-- (void)initiateMetadataSearchForTags:(NSSet*)tagSet usageMode:(BOOL)usageMode
+- (NSMetadataQuery*)performMetadataSearchForTags:(NSSet*)tagSet usageMode:(BOOL)usageMode
 {
-    // Create the metadata query instance
-    self.metadataQuery = [[NSMetadataQuery alloc] init];
+    // Create the metadata query
+    NSMetadataQuery* metadataQuery = [[NSMetadataQuery alloc] init];
     
     // Register the notifications for batch and completion updates
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(queryDidUpdate:)
-                                                 name:NSMetadataQueryDidUpdateNotification
-                                               object:_metadataQuery];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(queryComplete:)
                                                  name:NSMetadataQueryDidFinishGatheringNotification
-                                               object:_metadataQuery];
+                                               object:metadataQuery];
     
     // Configure the search predicate
     NSPredicate *searchPredicate = [self formQueryPredicateForTags:tagSet];
-    [_metadataQuery setPredicate:searchPredicate];
+    [metadataQuery setPredicate:searchPredicate];
     
     // Set the search scope
     NSArray *searchScopes = [self searchScopesFromSearchScope:self.searchScope];
-    [_metadataQuery setSearchScopes:searchScopes];
+    [metadataQuery setSearchScopes:searchScopes];
     
     // Configure the sorting of the results
-    // (note that the query can't sort by the item path, which makes sorting less usefull)
+    // (note that the query can't sort by the item path, which makes sorting less useful)
     NSSortDescriptor *sortKeys = [[NSSortDescriptor alloc] initWithKey:(id)kMDItemDisplayName
                                                              ascending:YES];
-    [_metadataQuery setSortDescriptors:[NSArray arrayWithObject:sortKeys]];
+    [metadataQuery setSortDescriptors:[NSArray arrayWithObject:sortKeys]];
     
     // If we're collecting usage stats, request that values be saved for tags
     if (usageMode)
-        [_metadataQuery setValueListAttributes:@[kMDItemUserTags]];
+        [metadataQuery setValueListAttributes:@[kMDItemUserTags]];
     
     // Ask the query to send notifications on the main thread, which will
     // ensure we process them on the main thread, and will also ensure that our
     // main thread is kicked so that the run loop will iterate and thus complete.
-    [_metadataQuery setOperationQueue:[NSOperationQueue mainQueue]];
+    [metadataQuery setOperationQueue:[NSOperationQueue mainQueue]];
     
     // Begin the asynchronous query
-    [_metadataQuery startQuery];
+    [metadataQuery startQuery];
+
+    // Enter the run loop, exiting only when the query is done
+    NSRunLoop *runLoop = [NSRunLoop currentRunLoop];
+    while (!metadataQuery.stopped && [runLoop runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]])
+        ;
+    
+    // Remove the notification observers
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:NSMetadataQueryDidFinishGatheringNotification
+                                                  object:metadataQuery];
+    
+    return metadataQuery;
 }
 
 
-- (void)queryDidUpdate:sender
-{
-    // We don't need this at present
-}
-
-
-- (void)queryComplete:sender
+- (void)queryComplete:(NSNotification*)sender
 {
     // Stop the query, the single pass is completed.
     // This will cause our runloop loop to terminate.
-    [_metadataQuery stopQuery];
+    NSMetadataQuery* metadataQuery = sender.object;
+    [metadataQuery stopQuery];
 }
 
 
