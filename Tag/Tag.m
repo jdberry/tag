@@ -124,7 +124,7 @@ typedef NS_ENUM(int, CommandCode) {
         { "remove",     required_argument,      0,              OperationModeRemove },
         { "match",      required_argument,      0,              OperationModeMatch },
         { "find",       required_argument,      0,              OperationModeFind },
-        { "usage",      required_argument,      0,              OperationModeUsage },
+        { "usage",      optional_argument,      0,              OperationModeUsage },
 
         { "list",       no_argument,            0,              OperationModeList },
         
@@ -182,7 +182,7 @@ typedef NS_ENUM(int, CommandCode) {
     // Parse Options
     int option_char;
     int option_index;
-    while ((option_char = getopt_long(argc, argv, "s:a:r:m:f:u:lAeRdnNtTgGcp0hv", options, &option_index)) != -1)
+    while ((option_char = getopt_long(argc, argv, "s:a:r:m:f:u::lAeRdnNtTgGcp0hv", options, &option_index)) != -1)
     {
         switch (option_char)
         {
@@ -201,8 +201,11 @@ typedef NS_ENUM(int, CommandCode) {
                 }
                 self.operationMode = option_char;
                 
-                if (self.operationMode != OperationModeList)
-                    [self parseTagsArgument:[NSString stringWithUTF8String:optarg]];
+                if (optarg == nil && self.operationMode == OperationModeUsage)
+                    optarg = "*";
+                
+                if (optarg != nil)
+                   [self parseTagsArgument:[NSString stringWithUTF8String:optarg]];
                 
                 break;
             }
@@ -261,6 +264,8 @@ typedef NS_ENUM(int, CommandCode) {
                 nulTerminate = YES;
                 break;
 
+            case '?':
+            case ':':
             case 'h':
                 _operationMode = OperationModeNone;
                 [self displayHelp];
@@ -269,9 +274,6 @@ typedef NS_ENUM(int, CommandCode) {
             case 'v':
                 _operationMode = OperationModeNone;
                 [self displayVersion];
-                break;
-                
-            case '?':
                 break;
         }
     }
@@ -369,7 +371,7 @@ typedef NS_ENUM(int, CommandCode) {
            "    tag -s | --set <tags> <path>...     Set tags on file\n"
            "    tag -m | --match <tags> <path>...   Display files with matching tags\n"
            "    tag -f | --find <tags> <path>...    Find all files with tags (-A, -e, -R ignored)\n"
-           "    tag -u | --usage <tags> <path>...   Display tags used, with usage counts\n"
+           "    tag -u | --usage <tags> <path>...   Display tags, with usage counts\n"
            "    tag -l | --list <path>...           List the tags on file\n"
            "  <tags> is a comma-separated list of tag names; use * to match/find any tag.\n"
            "  additional options:\n"
@@ -850,17 +852,17 @@ typedef NS_ENUM(int, CommandCode) {
 
 - (void)doFind
 {
-    [self findGutsUsageMode:NO];
+    [self findGutsWithUsage:NO];
 }
 
 
 - (void)doUsage
 {
-    [self findGutsUsageMode:YES];
+    [self findGutsWithUsage:YES];
 }
 
 
-- (void)findGutsUsageMode:(BOOL)usageMode
+- (void)findGutsWithUsage:(BOOL)usageMode
 {
     // Start a metadata search for files containing all of the given tags
     NSMetadataQuery* metadataQuery = [self performMetadataSearchForTags:self.tags usageMode:usageMode];
@@ -874,7 +876,7 @@ typedef NS_ENUM(int, CommandCode) {
         for (NSMetadataQueryAttributeValueTuple* tuple in tagTuples)
         {
             NSString* tag = (tuple.value == [NSNull null]) ? @"<no_tag>" : tuple.value;
-            Printf(@"%@\t(%ld)\n", [self displayStringForTag:tag], (long)tuple.count);
+            Printf(@"%ld\t%@\n", (long)tuple.count, [self displayStringForTag:tag]);
         }
     }
     else
