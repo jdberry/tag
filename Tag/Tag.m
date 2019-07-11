@@ -371,7 +371,7 @@ typedef NS_ENUM(int, CommandCode) {
            "    tag -s | --set <tags> <path>...     Set tags on file\n"
            "    tag -m | --match <tags> <path>...   Display files with matching tags\n"
            "    tag -f | --find <tags> <path>...    Find all files with tags (-A, -e, -R ignored)\n"
-           "    tag -u | --usage <tags> <path>...   Display tags, with usage counts\n"
+           "    tag -u | --usage <tags> <path>...   Display tags used, with usage counts\n"
            "    tag -l | --list <path>...           List the tags on file\n"
            "  <tags> is a comma-separated list of tag names; use * to match/find any tag.\n"
            "  additional options:\n"
