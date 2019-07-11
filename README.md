@@ -13,8 +13,9 @@ Usage
 		tag -r | --remove <tags> <path>...  Remove tags from file
 		tag -s | --set <tags> <path>...     Set tags on file
 		tag -m | --match <tags> <path>...   Display files with matching tags
-		tag -l | --list <path>...           List the tags on file
 		tag -f | --find <tags> <path>...    Find all files with tags, limited to paths if present
+		tag -l | --list <path>...           List the tags on file
+		tag -u | --usage <tags> <path>...   Display tags used, with usage counts
 	  <tags> is a comma-separated list of tag names; use * to match/find any tag.
 	  additional options:
 			-v | --version      Display version
@@ -28,6 +29,7 @@ Usage
 			-T | --no-tags      Turn off tags display in output (list)
 			-g | --garrulous    Display tags each on own line (list, find, match)
 			-G | --no-garrulous Display tags comma-separated after filename (default)
+			-c | --color        Display tags in color
 			-p | --slash        Terminate each directory name with a slash
 			-0 | --nul          Terminate lines with NUL (\0) for use with xargs -0
 			     --home         Find tagged files in user home directory
@@ -152,6 +154,31 @@ You may also supply one or more paths in which to search.
 
 	tag --find tagname /path/to/here
 	tag --find tagname --home /path/to/here ./there
+	
+### Display tag usage
+
+The *usage* operator follows the syntax and operation of *find*, but instead of displaying the files found, it lists the tags found, prefixed with the usage count of each. In contrast to *find*, the tag operand to *usage* is optional: it defaults to '*'.
+
+In the simplest usage, *usage* finds all tagged files on the system, listing the count of each tag encountered:
+
+	tag --usage
+	tag --usage '*'
+
+If you limit the search to specific tags, then the files with those tags will be found, and usage information for all of the tags on those files will be displayed:
+
+	tag --usage tagname
+	tag --usage tagname1,tagname2
+
+Note that when asking for usage of specific tags, you may see usage displayed for additional tags: those are other tags that occur on the files discovered by your search. 
+
+As with the *find* operation, you may control the paths searched by *usage*:
+	
+	tag --usage '*' /path/to/here
+	tag --usage '*' --home /path/to/here
+	
+### Colored Output
+
+If your terminal supports ANSI color sequences, you may pass the -c/--color option. With this option in effect, any tags with known colors will be displayed in approximately the right color. Note that support for this option is dependent upon parsing private Finder data, and so may not always be supported correctly.
 
 ### Get help
 
@@ -192,11 +219,11 @@ Advanced Usage
 * Wherever a "tagname" is expected, a list of tags may be provided. They must be comma-separated.
 * Tag names may include spaces, but the entire tag list must be provided as one parameter: "tag1,a multiword tag name,tag3".
 * Because the comma is used to separate tag names, it may not be used in tags (we don't support escaping that comma yet).
-* For *match*, *find*, and *remove*, a tag name of '*' is the wildcard and will match any tag. An empty tag expression '' will match only files with no tags.
+* For *match*, *find*, *usage*, and *remove*, a tag name of '*' is the wildcard and will match any tag. An empty tag expression '' will match only files with no tags.
 * Wherever a "file" is expected, a list of files may be used instead. These are provided as separate parameters.
 * Note that directories can be tagged as well, so directories may be specified instead of files.
 * The --all, --enter, and --recursive options apply to --add, --remove, --set, --match, and --list, and control whether hidden files are processed and whether directories are entered and/or processed recursively. If a directory is supplied, but neither of --enter or --recursive, then the operation will apply to the directory itself, rather than to its contents.
-* The operation selector --add, --remove, --set, --match, --list, or --find may be abbreviated as -a, -r, -s, -m, -l, or -f, respectively. All of the options have a short version, in fact. See see the synopsis above, or output from help.
+* The operation selector --add, --remove, --set, --match, --list, --find, or --usage may be abbreviated as -a, -r, -s, -m, -l, -f, or -u respectively. All of the options have a short version, in fact. See see the synopsis above, or output from help.
 * If no operation selector is given, the operation will default to *list*.
 * A *list* operation will default to the current directory if no directory is given.
 * For compatibility with Finder, tags are compared in a case-insensitive manner.
