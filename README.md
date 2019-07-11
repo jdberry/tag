@@ -157,7 +157,7 @@ You may also supply one or more paths in which to search.
 	
 ### Display tag usage
 
-The *usage* operator follows the syntax and operation of *find*, but instead of displaying the files found, it lists the tags found, prefixed with the usage count of each. In contrast to *find*, the tag operand to *usage* is optional: it defaults to '*'.
+The *usage* operation follows the syntax and operation of *find*, but instead of displaying the files found, it lists the tags found, prefixed with the usage count of each. In contrast to *find*, the tag operand to *usage* is optional: it defaults to '*'.
 
 In the simplest usage, *usage* finds all tagged files on the system, listing the count of each tag encountered:
 
