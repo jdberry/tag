@@ -12,6 +12,7 @@ Usage
 		tag -a | --add <tags> <path>...     Add tags to file
 		tag -r | --remove <tags> <path>...  Remove tags from file
 		tag -s | --set <tags> <path>...     Set tags on file
+          tag -i | --invert <tags> <path>...  Invert tags on file
 		tag -m | --match <tags> <path>...   Display files with matching tags
 		tag -f | --find <tags> <path>...    Find all files with tags, limited to paths if present
 		tag -l | --list <path>...           List the tags on file
@@ -60,6 +61,13 @@ The *set* operation replaces all tags on the specified files with one or more ne
 
 	tag --set tagname file
 	tag --set tagname1,tagname2,... file1 file2...
+
+### Invert tags on a file
+
+The *invert* operation sets tags which are not present and remove tags which are present on the specified files.
+
+    tag --invert tagname file
+    tag --invert tagname1,tagname2,... file1 file2...
 
 ### Show files matching tags
 
@@ -223,7 +231,7 @@ Advanced Usage
 * Wherever a "file" is expected, a list of files may be used instead. These are provided as separate parameters.
 * Note that directories can be tagged as well, so directories may be specified instead of files.
 * The --all, --enter, and --recursive options apply to --add, --remove, --set, --match, and --list, and control whether hidden files are processed and whether directories are entered and/or processed recursively. If a directory is supplied, but neither of --enter or --recursive, then the operation will apply to the directory itself, rather than to its contents.
-* The operation selector --add, --remove, --set, --match, --list, --find, or --usage may be abbreviated as -a, -r, -s, -m, -l, -f, or -u respectively. All of the options have a short version, in fact. See see the synopsis above, or output from help.
+* The operation selector --add, --remove, --set, --invert, --match, --list, --find, or --usage may be abbreviated as -a, -r, -s, -i, -m, -l, -f, or -u respectively. All of the options have a short version, in fact. See see the synopsis above, or output from help.
 * If no operation selector is given, the operation will default to *list*.
 * A *list* operation will default to the current directory if no directory is given.
 * For compatibility with Finder, tags are compared in a case-insensitive manner.

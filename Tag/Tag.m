@@ -122,6 +122,7 @@ typedef NS_ENUM(int, CommandCode) {
         { "set",        required_argument,      0,              OperationModeSet },
         { "add",        required_argument,      0,              OperationModeAdd },
         { "remove",     required_argument,      0,              OperationModeRemove },
+        { "invert",     required_argument,      0,              OperationModeInvert },
         { "match",      required_argument,      0,              OperationModeMatch },
         { "find",       required_argument,      0,              OperationModeFind },
         { "usage",      optional_argument,      0,              OperationModeUsage },
@@ -182,13 +183,14 @@ typedef NS_ENUM(int, CommandCode) {
     // Parse Options
     int option_char;
     int option_index;
-    while ((option_char = getopt_long(argc, argv, "s:a:r:m:f:u::lAeRdnNtTgGcp0hv", options, &option_index)) != -1)
+    while ((option_char = getopt_long(argc, argv, "s:a:r:i:m:f:u::lAeRdnNtTgGcp0hv", options, &option_index)) != -1)
     {
         switch (option_char)
         {
             case OperationModeSet:
             case OperationModeAdd:
             case OperationModeRemove:
+            case OperationModeInvert:
             case OperationModeMatch:
             case OperationModeFind:
             case OperationModeUsage:
@@ -369,6 +371,7 @@ typedef NS_ENUM(int, CommandCode) {
            "    tag -a | --add <tags> <path>...     Add tags to file\n"
            "    tag -r | --remove <tags> <path>...  Remove tags from file\n"
            "    tag -s | --set <tags> <path>...     Set tags on file\n"
+           "    tag -i | --invert <tags> <path>...  Invert tags on file\n"
            "    tag -m | --match <tags> <path>...   Display files with matching tags\n"
            "    tag -f | --find <tags> <path>...    Find all files with tags (-A, -e, -R ignored)\n"
            "    tag -u | --usage <tags> <path>...   Display tags used, with usage counts\n"
@@ -493,6 +496,10 @@ typedef NS_ENUM(int, CommandCode) {
             
         case OperationModeRemove:
             [self doRemove];
+            break;
+            
+        case OperationModeInvert:
+            [self doInvert];
             break;
             
         case OperationModeMatch:
@@ -801,6 +808,49 @@ typedef NS_ENUM(int, CommandCode) {
         
         // Set the revised tags onto the item
         if (![URL setResourceValue:revisedTags forKey:NSURLTagNamesKey error:&error])
+            [self reportFatalError:error onURL:URL];
+    }];
+}
+
+
+- (void)doInvert
+{
+    // If there are no tags to invert, we're done
+    if (![self.tags count])
+        return;
+    
+    // Only perform invert on specified URLs
+    // (we don't implicitly enumerate the current directory)
+    if ([self.URLs count] == 0)
+        return;
+
+    // Enumerate the provided URLs, adding tags to each
+    // --all, --enter, and --recursive apply
+    [self enumerateURLsWithBlock:^(NSURL *URL) {
+        NSError* error;
+        
+        // Get the existing tags
+        NSArray* existingTags;
+        if (![URL getResourceValue:&existingTags forKey:NSURLTagNamesKey error:&error])
+            [self reportFatalError:error onURL:URL];
+        
+        NSMutableSet* curTags = [self tagSetFromTagArray:existingTags];
+        
+        // Calculate tags to be removed
+        NSMutableSet* tagsToRemove = [curTags mutableCopy];
+        [tagsToRemove intersectSet:self.tags];
+        
+        // Calculate tags to be added
+        NSMutableSet* tagsToAdd = [self.tags mutableCopy];
+        [tagsToAdd minusSet:tagsToRemove];
+        
+        // Remove tags to be removed
+        [curTags minusSet:tagsToRemove];
+        // Add tags to be added
+        [curTags unionSet:tagsToAdd];
+        
+        // Set all the new tags onto the item
+        if (![URL setResourceValue:[self tagArrayFromTagSet:curTags] forKey:NSURLTagNamesKey error:&error])
             [self reportFatalError:error onURL:URL];
     }];
 }
