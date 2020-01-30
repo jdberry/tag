@@ -233,7 +233,7 @@ Advanced Usage
 -----
 To export tags from all files and folders inside a specific folder, use the following command from the specific folder itself:
 
-echo '#!/bin/sh' > result.sh ; find . -not -path '*/\.*' -exec printf 'tag -s '  \; -exec tag -N -0 {} \; -exec printf " " \; -exec tag -T -0 {} \; -exec echo "" \; > result.sh
+echo '#!/bin/sh' > result.sh ; find . -not -path '*/\.*' -exec printf 'tag -s '  \; -exec tag -N -0 {} \; -exec printf " " \; -exec tag -T -0 {} \; -exec echo "" \; >> result.sh
 
 The generated file "result.sh" can then be executed to set the same tags on another osx computer (useful when using file sync systems that don't save tags).
 -----
