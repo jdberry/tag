@@ -230,6 +230,14 @@ Advanced Usage
 * If you plan to pipe the output of **tag** through **xargs**, you might want to use the -0 option of each.
 * For compatibility with versions 0.8.1 and earlier, -d/--descend is an alias for -R/--recursive.
 
+-----
+To export tags from all files and folders inside a specific folder, use the following command from the specific folder itself:
+
+echo '#!/bin/sh' > result.sh ; find . -not -path '*/\.*' -exec printf 'tag -s '  \; -exec tag -N -0 {} \; -exec printf " " \; -exec tag -T -0 {} \; -exec echo "" \; > result.sh
+
+The generated file "result.sh" can then be executed to set the same tags on another osx computer (useful when using file sync systems that don't save tags).
+-----
+
 Omissions
 ---
 The following features are contemplated for future enhancement:
