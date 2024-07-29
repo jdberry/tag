@@ -9,13 +9,14 @@ Usage
 
 	tag - A tool for manipulating and querying file tags.
 	  usage:
-		tag -a | --add <tags> <path>...     Add tags to file
-		tag -r | --remove <tags> <path>...  Remove tags from file
-		tag -s | --set <tags> <path>...     Set tags on file
-		tag -m | --match <tags> <path>...   Display files with matching tags
-		tag -f | --find <tags> <path>...    Find all files with tags, limited to paths if present
-		tag -l | --list <path>...           List the tags on file
-		tag -u | --usage <tags> <path>...   Display tags used, with usage counts
+		tag -a | --add <tags> <path>...            Add tags to file
+		tag -r | --remove <tags> <path>...         Remove tags from file
+		tag -s | --set <tags> <path>...            Set tags on file
+		tag -m | --match <tags> <path>...          Display files with matching tags
+		tag -f | --find <tags> <path>...           Find all files with tags, limited to paths if present
+		tag -F | --invert-find <tags> <path>...    Find all files with tags, limited to paths if present
+		tag -l | --list <path>...                  List the tags on file
+		tag -u | --usage <tags> <path>...          Display tags used, with usage counts
 	  <tags> is a comma-separated list of tag names; use * to match/find any tag.
 	  additional options:
 			-v | --version      Display version
@@ -154,7 +155,11 @@ You may also supply one or more paths in which to search.
 
 	tag --find tagname /path/to/here
 	tag --find tagname --home /path/to/here ./there
-	
+
+### Find all files on the filesystem without specified tags
+
+The *invert-find* operation searches across your filesystem for all files that *do not* contain the specified tags. This uses the same filesystem metadata database that Spotlight uses, so it is fast.
+
 ### Display tag usage
 
 The *usage* operation follows the syntax and operation of *find*, but instead of displaying the files found, it lists the tags found, prefixed with the usage count of each. In contrast to *find*, the tag operand to *usage* is optional: it defaults to '*'.
@@ -223,7 +228,7 @@ Advanced Usage
 * Wherever a "file" is expected, a list of files may be used instead. These are provided as separate parameters.
 * Note that directories can be tagged as well, so directories may be specified instead of files.
 * The --all, --enter, and --recursive options apply to --add, --remove, --set, --match, and --list, and control whether hidden files are processed and whether directories are entered and/or processed recursively. If a directory is supplied, but neither of --enter or --recursive, then the operation will apply to the directory itself, rather than to its contents.
-* The operation selector --add, --remove, --set, --match, --list, --find, or --usage may be abbreviated as -a, -r, -s, -m, -l, -f, or -u respectively. All of the options have a short version, in fact. See see the synopsis above, or output from help.
+* The operation selector --add, --remove, --set, --match, --list, --find, --invert-find, or --usage may be abbreviated as -a, -r, -s, -m, -l, -f, -F, or -u respectively. All of the options have a short version, in fact. See see the synopsis above, or output from help.
 * If no operation selector is given, the operation will default to *list*.
 * A *list* operation will default to the current directory if no directory is given.
 * For compatibility with Finder, tags are compared in a case-insensitive manner.

@@ -36,6 +36,7 @@ typedef NS_ENUM(int, OperationMode) {
     OperationModeRemove     = 'r',
     OperationModeMatch      = 'm',
     OperationModeFind       = 'f',
+    OperationModeInvertFind = 'F',
     OperationModeUsage      = 'u',
     OperationModeList       = 'l',
 };
