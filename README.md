@@ -1,3 +1,6 @@
+stop tagging.
+direct message on Messenger
+admin request
 tag
 ===
 **tag** is a command line tool to manipulate tags on Mac OS X files (10.9 Mavericks and above), and to query for files with those tags. **tag** can use the file system's built-in metadata search functionality to rapidly find all files that have been tagged with a given set of tags.
